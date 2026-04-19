@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: ../modern-app
+      dockerfile: docker/Dockerfile
+    image: peoplecine-web:latest
+    container_name: peoplecine-web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ../peoplecine_data/config/peoplecine.env
+    ports:
+      - "7000:80"
+    volumes:
+      - ../peoplecine_data/app/storage:/var/www/html/storage
+      - ../peoplecine_data/app/bootstrap-cache:/var/www/html/bootstrap/cache
+      - ../peoplecine_data/bootstrap/sqlite:/var/www/peoplecine_data/bootstrap/sqlite
+      - ../peoplecine_data/legacy/wboard:/var/www/peoplecine_data/legacy/wboard
+
+  db:
+    image: mariadb:11.4
+    container_name: peoplecine-db
+    restart: unless-stopped
+    command:
+      - --bind-address=0.0.0.0
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    env_file:
+      - ../peoplecine_data/config/peoplecine.env
+    ports:
+      - "7010:3306"
+    volumes:
+      - ../peoplecine_data/mariadb/data:/var/lib/mysql
+      - ./mariadb-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p$$MARIADB_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
