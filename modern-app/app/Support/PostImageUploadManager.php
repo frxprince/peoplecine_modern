@@ -66,7 +66,7 @@ class PostImageUploadManager
             return $startingSlot;
         }
 
-        $uploadsDirectory = $this->legacyUploadsRoot();
+        [$uploadsDirectory, $legacyDirectory] = $this->legacyUploadsDirectoryInfo($timestamp);
 
         File::ensureDirectoryExists($uploadsDirectory);
 
@@ -95,7 +95,7 @@ class PostImageUploadManager
             $this->createAttachmentRecord(
                 $post,
                 $slot,
-                'uploads/'.$fileName,
+                $legacyDirectory.'/'.$fileName,
                 $originalFilename,
                 $mimeType,
                 $sizeBytes,
@@ -143,7 +143,7 @@ class PostImageUploadManager
             ]);
         }
 
-        $uploadsDirectory = $this->legacyUploadsRoot();
+        [$uploadsDirectory, $legacyDirectory] = $this->legacyUploadsDirectoryInfo($timestamp);
         File::ensureDirectoryExists($uploadsDirectory);
 
         $slot = $startingSlot;
@@ -179,7 +179,7 @@ class PostImageUploadManager
             $this->createAttachmentRecord(
                 $post,
                 $slot,
-                'uploads/'.$fileName,
+                $legacyDirectory.'/'.$fileName,
                 $upload->original_filename,
                 $upload->mime_type,
                 $upload->size_bytes,
@@ -323,6 +323,28 @@ class PostImageUploadManager
         $root = rtrim((string) config('peoplecine.legacy_wboard_root'), '\\/');
 
         return $root.DIRECTORY_SEPARATOR.'uploads';
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function legacyUploadsDirectoryInfo(DateTimeInterface $timestamp): array
+    {
+        $uploadsRoot = $this->legacyUploadsRoot();
+        $pattern = trim((string) config('peoplecine.post_image_directory_pattern', 'Y/m'));
+        $subdirectory = trim($pattern !== '' ? $timestamp->format($pattern) : '', '\\/');
+
+        if ($subdirectory === '') {
+            return [$uploadsRoot, 'uploads'];
+        }
+
+        $normalizedSubdirectory = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $subdirectory);
+        $legacySubdirectory = str_replace(DIRECTORY_SEPARATOR, '/', $normalizedSubdirectory);
+
+        return [
+            $uploadsRoot.DIRECTORY_SEPARATOR.$normalizedSubdirectory,
+            'uploads/'.$legacySubdirectory,
+        ];
     }
 
     private function relativeStagedPath(User $user, string $fileName): string
