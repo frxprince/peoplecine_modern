@@ -23,7 +23,7 @@ class RegisteredUserController extends Controller
         [$left, $right] = $this->issueChallenge($request);
 
         return view('auth.register', [
-            'title' => 'Register',
+            'title' => __('Register'),
             'challengeLeft' => $left,
             'challengeRight' => $right,
         ]);
@@ -40,6 +40,8 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
             'phone' => ['nullable', 'string', 'max:50'],
             'province' => ['nullable', 'string', 'max:100'],
+            'postcode' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:2000'],
             'website' => ['nullable', 'string', 'max:0'],
             'human_check' => ['required', 'integer'],
         ]);
@@ -62,6 +64,8 @@ class RegisteredUserController extends Controller
                 'display_name' => trim($validated['display_name']),
                 'phone' => trim((string) ($validated['phone'] ?? '')) ?: null,
                 'province' => trim((string) ($validated['province'] ?? '')) ?: null,
+                'postal_code' => trim((string) ($validated['postcode'] ?? '')) ?: null,
+                'address' => trim((string) ($validated['address'] ?? '')) ?: null,
             ]);
 
             return $user->fresh(['profile']);
@@ -74,7 +78,7 @@ class RegisteredUserController extends Controller
 
         return redirect()
             ->route('dashboard')
-            ->with('status', 'Your new member account has been created.');
+            ->with('status', __('Your new member account has been created.'));
     }
 
     private function issueChallenge(Request $request): array
@@ -94,7 +98,7 @@ class RegisteredUserController extends Controller
             $this->hitRateLimit($request);
 
             throw ValidationException::withMessages([
-                'website' => 'Registration could not be completed. Please try again.',
+                'website' => __('Registration could not be completed. Please try again.'),
             ]);
         }
 
@@ -104,7 +108,7 @@ class RegisteredUserController extends Controller
             $this->hitRateLimit($request);
 
             throw ValidationException::withMessages([
-                'human_check' => 'Please answer the human-check question correctly.',
+                'human_check' => __('Please answer the human-check question correctly.'),
             ]);
         }
 
@@ -114,7 +118,7 @@ class RegisteredUserController extends Controller
             $this->hitRateLimit($request);
 
             throw ValidationException::withMessages([
-                'human_check' => 'Please take a moment to complete the registration form.',
+                'human_check' => __('Please take a moment to complete the registration form.'),
             ]);
         }
     }
@@ -126,7 +130,7 @@ class RegisteredUserController extends Controller
         }
 
         throw ValidationException::withMessages([
-            'username' => 'Too many registration attempts. Please wait a few minutes and try again.',
+            'username' => __('Too many registration attempts. Please wait a few minutes and try again.'),
         ]);
     }
 

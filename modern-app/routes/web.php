@@ -23,7 +23,8 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TopicController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', HomeController::class)->name('home');
+Route::get('/', [HomeController::class, 'landing'])->name('landing');
+Route::get('/forum', [HomeController::class, 'forum'])->name('home');
 Route::get('/lang/{locale}', LocaleController::class)->name('locale.switch');
 Route::get('/calculator/throw', [CalculatorController::class, 'throwSelector'])->name('calculator.throw');
 Route::get('/calculator/throw/{screen}', [CalculatorController::class, 'throwCalculator'])

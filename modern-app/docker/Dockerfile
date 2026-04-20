@@ -8,11 +8,13 @@ RUN composer install \
     --no-dev \
     --prefer-dist \
     --no-interaction \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --no-scripts
 
 COPY . .
 
-RUN composer dump-autoload --optimize --no-dev
+RUN composer dump-autoload --optimize --no-dev \
+    && composer run-script post-autoload-dump --no-dev
 
 FROM php:8.3-apache
 
@@ -25,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjpeg62-turbo-dev \
         libonig-dev \
         libpng-dev \
+        libsqlite3-dev \
         libwebp-dev \
         libzip-dev \
         unzip \

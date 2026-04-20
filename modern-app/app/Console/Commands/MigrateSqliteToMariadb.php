@@ -40,6 +40,7 @@ class MigrateSqliteToMariadb extends Command
         $targetConnection = (string) ($this->option('target-connection') ?: config('database.default', 'mariadb'));
         $chunkSize = max(50, (int) $this->option('chunk'));
         $sourcePath = trim((string) $this->option('source'));
+        $rebuildFresh = (bool) $this->option('fresh');
 
         if ($sourcePath !== '') {
             Config::set("database.connections.{$sourceConnection}.database", $sourcePath);
@@ -59,7 +60,7 @@ class MigrateSqliteToMariadb extends Command
             return self::FAILURE;
         }
 
-        if ($this->option('fresh')) {
+        if ($rebuildFresh) {
             $this->info("Rebuilding target schema on [{$targetConnection}]...");
 
             Artisan::call('migrate:fresh', [
@@ -87,8 +88,10 @@ class MigrateSqliteToMariadb extends Command
         $this->disableForeignKeyChecks($targetConnection);
 
         try {
-            foreach ($tables as $table) {
-                $this->truncateTargetTable($targetConnection, $table);
+            if (! $rebuildFresh) {
+                foreach ($tables as $table) {
+                    $this->truncateTargetTable($targetConnection, $table);
+                }
             }
 
             foreach ($tables as $table) {
@@ -148,15 +151,22 @@ class MigrateSqliteToMariadb extends Command
     private function tablesToCopy(string $sourceConnection, string $targetConnection): Collection
     {
         $sourceTables = collect(Schema::connection($sourceConnection)->getTableListing())
-            ->map(fn (string $table): string => strtolower($table));
+            ->map(fn (string $table): string => $this->normalizeTableName($table));
 
         $targetTables = collect(Schema::connection($targetConnection)->getTableListing())
-            ->map(fn (string $table): string => strtolower($table));
+            ->map(fn (string $table): string => $this->normalizeTableName($table));
 
         return $sourceTables
             ->intersect($targetTables)
             ->reject(fn (string $table): bool => in_array($table, $this->skipTables, true))
             ->values();
+    }
+
+    private function normalizeTableName(string $table): string
+    {
+        $segments = explode('.', strtolower($table));
+
+        return (string) end($segments);
     }
 
     private function truncateTargetTable(string $targetConnection, string $table): void

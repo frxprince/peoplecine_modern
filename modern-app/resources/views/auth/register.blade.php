@@ -76,6 +76,22 @@
                         @enderror
                     </div>
 
+                    <div class="form-field">
+                        <label for="postcode">{{ __('Postcode') }}</label>
+                        <input id="postcode" name="postcode" type="text" value="{{ old('postcode') }}">
+                        @error('postcode')
+                            <p class="form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label for="address">{{ __('Address') }}</label>
+                        <textarea id="address" name="address" rows="3">{{ old('address') }}</textarea>
+                        @error('address')
+                            <p class="form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="form-field honeypot-field" aria-hidden="true">
                         <label for="website">{{ __('Website') }}</label>
                         <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">

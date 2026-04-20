@@ -18,17 +18,40 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 mkdir -p \
-    "${DATA_ROOT}/app/bootstrap-cache" \
-    "${DATA_ROOT}/app/storage/app/private" \
-    "${DATA_ROOT}/app/storage/framework/cache" \
-    "${DATA_ROOT}/app/storage/framework/sessions" \
-    "${DATA_ROOT}/app/storage/framework/views" \
-    "${DATA_ROOT}/app/storage/logs" \
+    "${DATA_ROOT}/app/code" \
     "${DATA_ROOT}/bootstrap/sqlite" \
     "${DATA_ROOT}/config" \
     "${DATA_ROOT}/legacy/wboard/icons" \
     "${DATA_ROOT}/legacy/wboard/uploads" \
     "${DATA_ROOT}/mariadb/data"
+
+if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete \
+        --exclude '.env' \
+        --exclude 'node_modules' \
+        --exclude 'storage/logs/*' \
+        --exclude 'storage/framework/cache/*' \
+        --exclude 'storage/framework/sessions/*' \
+        --exclude 'storage/framework/views/*' \
+        --exclude 'storage/app/private/*' \
+        --exclude 'database/*.sqlite' \
+        --exclude 'database/*.sqlite-journal' \
+        "${PROJECT_ROOT}/modern-app/" "${DATA_ROOT}/app/code/"
+else
+    rm -rf "${DATA_ROOT}/app/code"
+    mkdir -p "${DATA_ROOT}/app/code"
+    cp -a "${PROJECT_ROOT}/modern-app/." "${DATA_ROOT}/app/code/"
+    rm -f "${DATA_ROOT}/app/code/.env"
+    rm -f "${DATA_ROOT}/app/code/database/"*.sqlite "${DATA_ROOT}/app/code/database/"*.sqlite-journal 2>/dev/null || true
+fi
+
+mkdir -p \
+    "${DATA_ROOT}/app/code/bootstrap/cache" \
+    "${DATA_ROOT}/app/code/storage/app/private" \
+    "${DATA_ROOT}/app/code/storage/framework/cache" \
+    "${DATA_ROOT}/app/code/storage/framework/sessions" \
+    "${DATA_ROOT}/app/code/storage/framework/views" \
+    "${DATA_ROOT}/app/code/storage/logs"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
     cp "${ENV_TEMPLATE}" "${ENV_FILE}"
@@ -79,8 +102,8 @@ if [[ -n "${LEGACY_ICONS_SOURCE}" ]]; then
 fi
 
 chmod -R 775 \
-    "${DATA_ROOT}/app/bootstrap-cache" \
-    "${DATA_ROOT}/app/storage" \
+    "${DATA_ROOT}/app/code/bootstrap/cache" \
+    "${DATA_ROOT}/app/code/storage" \
     "${DATA_ROOT}/bootstrap/sqlite" \
     "${DATA_ROOT}/legacy"
 
@@ -88,8 +111,8 @@ chmod -R 770 "${DATA_ROOT}/mariadb"
 
 if [[ "$(id -u)" -eq 0 ]]; then
     chown -R 33:33 \
-        "${DATA_ROOT}/app/bootstrap-cache" \
-        "${DATA_ROOT}/app/storage" \
+        "${DATA_ROOT}/app/code/bootstrap/cache" \
+        "${DATA_ROOT}/app/code/storage" \
         "${DATA_ROOT}/bootstrap/sqlite" \
         "${DATA_ROOT}/legacy" || true
     chown -R 999:999 "${DATA_ROOT}/mariadb" || true

@@ -14,8 +14,7 @@ services:
     ports:
       - "7000:80"
     volumes:
-      - ../peoplecine_data/app/storage:/var/www/html/storage
-      - ../peoplecine_data/app/bootstrap-cache:/var/www/html/bootstrap/cache
+      - ../peoplecine_data/app/code:/var/www/html
       - ../peoplecine_data/bootstrap/sqlite:/var/www/peoplecine_data/bootstrap/sqlite
       - ../peoplecine_data/legacy/wboard:/var/www/peoplecine_data/legacy/wboard
 

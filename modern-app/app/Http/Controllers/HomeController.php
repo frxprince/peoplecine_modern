@@ -11,7 +11,14 @@ use Illuminate\Contracts\View\View;
 
 class HomeController extends Controller
 {
-    public function __invoke(): View
+    public function landing(): View
+    {
+        return view('landing', [
+            'title' => __('PeopleCine Modern'),
+        ]);
+    }
+
+    public function forum(): View
     {
         $user = request()->user();
 

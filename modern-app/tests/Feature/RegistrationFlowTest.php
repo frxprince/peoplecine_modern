@@ -16,8 +16,10 @@ class RegistrationFlowTest extends TestCase
         $response = $this->get(route('register'));
 
         $response->assertOk();
-        $response->assertSee('Create a new PeopleCine account.');
-        $response->assertSee('Human Check:', false);
+        $response->assertSee(__('Create a new PeopleCine account.'));
+        $response->assertSee(__('Address'));
+        $response->assertSee(__('Postcode'));
+        $response->assertSee(__('Human Check'), false);
     }
 
     public function test_guest_can_register_new_member_account(): void
@@ -33,6 +35,8 @@ class RegistrationFlowTest extends TestCase
             'password_confirmation' => 'SecretPass123!',
             'phone' => '0812345678',
             'province' => 'Bangkok',
+            'postcode' => '10200',
+            'address' => '123 Cinema Road',
             'website' => '',
             'human_check' => session('registration.challenge_answer'),
         ]);
@@ -46,6 +50,8 @@ class RegistrationFlowTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertSame('New Member', $user->profile?->display_name);
         $this->assertSame('Bangkok', $user->profile?->province);
+        $this->assertSame('10200', $user->profile?->postal_code);
+        $this->assertSame('123 Cinema Road', $user->profile?->address);
     }
 
     public function test_registration_rejects_bot_honeypot_submission(): void

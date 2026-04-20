@@ -16,7 +16,7 @@
         <header class="legacy-header">
             <div class="legacy-header__banner">
                 <div class="legacy-header__brand">
-                    <a class="legacy-header__logo-link" href="{{ route('home') }}">
+                    <a class="legacy-header__logo-link" href="{{ route('landing') }}">
                         <img
                             class="legacy-header__logo"
                             src="{{ asset('images/peoplecine-logo.png') }}"
@@ -190,6 +190,18 @@
                     @foreach (($sidebarRooms ?? collect()) as $sidebarRoom)
                         <a href="{{ route('rooms.show', $sidebarRoom) }}">{!! $sidebarRoom->coloredLocalizedNameHtml() !!}</a>
                     @endforeach
+                </section>
+
+                <section class="legacy-side-banners" aria-label="PeopleCine banners">
+                    <a class="legacy-side-banner" href="{{ route('home') }}">
+                        <img src="{{ asset('images/legacy/add_newbanner_small.png') }}" alt="PeopleCine banner" loading="lazy">
+                    </a>
+                    <a class="legacy-side-banner" href="{{ route('home') }}">
+                        <img src="{{ asset('images/legacy/add_side_banner_mid.jpg') }}" alt="PeopleCine side banner" loading="lazy">
+                    </a>
+                    <a class="legacy-side-banner" href="{{ route('home') }}">
+                        <img src="{{ asset('images/legacy/bigfilm_leftbanner.png') }}" alt="Big film banner" loading="lazy">
+                    </a>
                 </section>
 
                 @auth
