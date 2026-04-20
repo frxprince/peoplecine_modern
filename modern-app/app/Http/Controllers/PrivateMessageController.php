@@ -302,6 +302,50 @@ class PrivateMessageController extends Controller
             ->with('status', 'Conversation removed from your messages.');
     }
 
+    public function destroyMany(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'conversation_ids' => ['required', 'array', 'min:1'],
+            'conversation_ids.*' => ['integer'],
+            'folder' => ['nullable', 'string', 'in:inbox,archived'],
+        ]);
+
+        $conversationIds = collect($validated['conversation_ids'])
+            ->map(fn (mixed $value): int => (int) $value)
+            ->filter(fn (int $value): bool => $value > 0)
+            ->unique()
+            ->values();
+
+        abort_if($conversationIds->isEmpty(), 422);
+
+        $authorizedIds = Conversation::query()
+            ->whereIn('id', $conversationIds)
+            ->whereHas('participants', function (Builder $query) use ($user): void {
+                $query->where('users.id', $user->id)
+                    ->whereNull('conversation_participants.deleted_at');
+            })
+            ->pluck('id');
+
+        abort_unless($authorizedIds->count() === $conversationIds->count(), 403);
+
+        DB::table('conversation_participants')
+            ->where('user_id', $user->id)
+            ->whereIn('conversation_id', $authorizedIds)
+            ->update([
+                'deleted_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        $folder = $validated['folder'] ?? 'inbox';
+        $redirectParameters = $folder === 'archived' ? ['folder' => 'archived'] : [];
+
+        return redirect()
+            ->route('messages.index', $redirectParameters)
+            ->with('status', 'Selected conversations removed from your messages.');
+    }
+
     private function authorizeConversation(Conversation $conversation, User $user): void
     {
         $isParticipant = $conversation->participants()

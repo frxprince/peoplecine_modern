@@ -19,6 +19,16 @@
             ]) }}
         </p>
         <div class="inline-actions">
+            <a
+                class="icon-button icon-button--facebook"
+                href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="{{ __('Share this topic on Facebook') }}"
+                aria-label="{{ __('Share this topic on Facebook') }}"
+            >
+                <span class="icon-button__facebook" aria-hidden="true"></span>
+            </a>
         @auth
             @if (isset($isBookmarked) && $isBookmarked)
                 <form method="POST" action="{{ route('topics.bookmarks.destroy', $topic) }}">

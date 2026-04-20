@@ -71,6 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/{conversation}/reply', [PrivateMessageController::class, 'reply'])->name('messages.reply');
     Route::post('/messages/{conversation}/archive', [PrivateMessageController::class, 'archive'])->name('messages.archive');
     Route::delete('/messages/{conversation}/archive', [PrivateMessageController::class, 'unarchive'])->name('messages.archive.destroy');
+    Route::delete('/messages', [PrivateMessageController::class, 'destroyMany'])->name('messages.destroy-many');
     Route::delete('/messages/{conversation}', [PrivateMessageController::class, 'destroy'])->name('messages.destroy');
     Route::post('/members/{user}/block', [DirectMessagePreferenceController::class, 'block'])->name('members.block');
     Route::delete('/members/{user}/block', [DirectMessagePreferenceController::class, 'unblock'])->name('members.unblock');

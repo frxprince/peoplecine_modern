@@ -28,6 +28,13 @@ class TopicController extends Controller
 
         abort_unless($topic->room?->isVisibleTo($request->user()) ?? false, 403);
 
+        Topic::withoutTimestamps(function () use ($topic): void {
+            $topic->increment('view_count');
+        });
+        $topic->refresh();
+        $topic->load(['room', 'author.profile'])
+            ->loadExists(['postsWithImages as has_posted_image']);
+
         $isBookmarked = $request->user()?->bookmarks()
             ->whereKey($topic->id)
             ->exists() ?? false;

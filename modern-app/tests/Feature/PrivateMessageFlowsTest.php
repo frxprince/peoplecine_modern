@@ -216,7 +216,7 @@ class PrivateMessageFlowsTest extends TestCase
             ->get(route('messages.index', ['folder' => 'archived']))
             ->assertOk()
             ->assertSee('Archive lane')
-            ->assertSee('Unarchive');
+            ->assertSee(__('Unarchive'));
 
         $this->actingAs($recipient)
             ->delete(route('messages.archive.destroy', $conversation))
@@ -235,6 +235,50 @@ class PrivateMessageFlowsTest extends TestCase
             ->get(route('messages.index'))
             ->assertOk()
             ->assertDontSee('Archive lane');
+    }
+
+    public function test_member_can_bulk_delete_conversations_from_inbox(): void
+    {
+        [$sender, $recipient] = $this->makeMessagingPair();
+
+        $firstConversation = $this->makeConversationBetween($sender, $recipient, 'Inbox bulk 1', '<p>First bulk delete</p>');
+        $secondConversation = $this->makeConversationBetween($sender, $recipient, 'Inbox bulk 2', '<p>Second bulk delete</p>');
+
+        $response = $this->actingAs($recipient)
+            ->delete(route('messages.destroy-many'), [
+                'conversation_ids' => [$firstConversation->id, $secondConversation->id],
+                'folder' => 'inbox',
+            ]);
+
+        $response->assertRedirect(route('messages.index'));
+        $this->assertNotNull($this->participantState($firstConversation, $recipient, 'deleted_at'));
+        $this->assertNotNull($this->participantState($secondConversation, $recipient, 'deleted_at'));
+
+        $this->actingAs($recipient)
+            ->get(route('messages.index'))
+            ->assertOk()
+            ->assertDontSee('Inbox bulk 1')
+            ->assertDontSee('Inbox bulk 2');
+    }
+
+    public function test_member_can_bulk_delete_conversations_from_archived_folder(): void
+    {
+        [$sender, $recipient] = $this->makeMessagingPair();
+
+        $conversation = $this->makeConversationBetween($sender, $recipient, 'Archived bulk', '<p>Archive bulk delete</p>');
+
+        $this->actingAs($recipient)
+            ->post(route('messages.archive', $conversation))
+            ->assertRedirect(route('messages.index'));
+
+        $response = $this->actingAs($recipient)
+            ->delete(route('messages.destroy-many'), [
+                'conversation_ids' => [$conversation->id],
+                'folder' => 'archived',
+            ]);
+
+        $response->assertRedirect(route('messages.index', ['folder' => 'archived']));
+        $this->assertNotNull($this->participantState($conversation, $recipient, 'deleted_at'));
     }
 
     public function test_blocked_member_cannot_start_or_reply_to_private_messages(): void

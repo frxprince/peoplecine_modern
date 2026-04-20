@@ -39,6 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gd \
         intl \
         mbstring \
+        opcache \
         pdo_mysql \
         pdo_sqlite \
         zip \
@@ -48,6 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /var/www/html
 
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/php-opcache.ini /usr/local/etc/php/conf.d/peoplecine-opcache.ini
 COPY docker/entrypoint.sh /usr/local/bin/peoplecine-entrypoint
 
 RUN chmod +x /usr/local/bin/peoplecine-entrypoint

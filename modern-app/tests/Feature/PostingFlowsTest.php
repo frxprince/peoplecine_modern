@@ -401,6 +401,21 @@ class PostingFlowsTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_topic_view_page_increments_view_count(): void
+    {
+        $topic = $this->createTopic();
+
+        $this->assertSame(0, (int) $topic->view_count);
+
+        $this->get(route('topics.show', $topic))->assertOk();
+        $topic->refresh();
+        $this->assertSame(1, (int) $topic->view_count);
+
+        $this->get(route('topics.show', $topic))->assertOk();
+        $topic->refresh();
+        $this->assertSame(2, (int) $topic->view_count);
+    }
+
     public function test_room_and_topic_pages_render_rich_editor_markup(): void
     {
         $user = $this->createMember('editor-member', 3);

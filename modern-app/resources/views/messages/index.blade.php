@@ -40,10 +40,39 @@
             </a>
         </div>
 
+        <form id="bulk-message-delete-form" method="POST" action="{{ route('messages.destroy-many') }}">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="folder" value="{{ $activeFolder }}">
+        </form>
+
+        <div class="admin-bulk-toolbar message-bulk-toolbar">
+            <label class="message-bulk-toolbar__toggle">
+                <input
+                    class="admin-user-table__checkbox"
+                    type="checkbox"
+                    data-message-select-all
+                    aria-label="{{ __('Select all conversations on this page') }}"
+                >
+                <span>{{ __('Select all conversations on this page') }}</span>
+            </label>
+            <button
+                class="button button--small button--danger"
+                type="submit"
+                form="bulk-message-delete-form"
+                onclick="return confirm('{{ __('Remove selected conversations from your message list?') }}');"
+            >
+                {{ __('Delete Selected') }}
+            </button>
+        </div>
+
         <div class="forum-table-wrap">
             <table class="forum-table forum-topic-table">
                 <thead>
                     <tr>
+                        <th width="4%" class="forum-table__action">
+                            <span class="sr-only">{{ __('Select') }}</span>
+                        </th>
                         <th width="30%">{{ __('Conversation') }}</th>
                         <th width="18%">{{ __('With') }}</th>
                         <th width="26%">{{ __('Latest Message') }}</th>
@@ -57,6 +86,17 @@
                         @php($latestMessage = $conversation->latestMessage)
                         @php($otherParticipants = $conversation->participants->reject(fn ($participant) => (int) $participant->id === (int) $user->id))
                         <tr @class(['message-row--unread' => $conversation->is_unread_for_viewer])>
+                            <td class="forum-table__action">
+                                <input
+                                    class="admin-user-table__checkbox"
+                                    type="checkbox"
+                                    name="conversation_ids[]"
+                                    value="{{ $conversation->id }}"
+                                    form="bulk-message-delete-form"
+                                    data-message-checkbox
+                                    aria-label="{{ __('Select :username', ['username' => $conversation->subjectLineFor($user)]) }}"
+                                >
+                            </td>
                             <td>
                                 <a class="forum-topic-link" href="{{ route('messages.show', $conversation) }}">
                                     {{ $conversation->subjectLineFor($user) }}
@@ -118,7 +158,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="forum-table__empty">
+                            <td colspan="7" class="forum-table__empty">
                                 {{ $activeFolder === 'archived' ? __('No archived conversations yet.') : __('No private messages yet.') }}
                             </td>
                         </tr>
@@ -131,4 +171,40 @@
             {{ $conversations->links() }}
         </div>
     </section>
+@endsection
+
+@section('pageScripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAll = document.querySelector('[data-message-select-all]');
+            const checkboxes = Array.from(document.querySelectorAll('[data-message-checkbox]'));
+
+            if (!selectAll || checkboxes.length === 0) {
+                return;
+            }
+
+            const syncSelectAll = function () {
+                const checkedCount = checkboxes.filter(function (checkbox) {
+                    return checkbox.checked;
+                }).length;
+
+                selectAll.checked = checkedCount === checkboxes.length;
+                selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+            };
+
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = selectAll.checked;
+                });
+
+                selectAll.indeterminate = false;
+            });
+
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener('change', syncSelectAll);
+            });
+
+            syncSelectAll();
+        });
+    </script>
 @endsection

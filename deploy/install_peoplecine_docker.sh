@@ -9,6 +9,7 @@ ENV_FILE="${DATA_ROOT}/config/peoplecine.env"
 COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.production.yml"
 
 SQLITE_SOURCE_PATH="${SQLITE_SOURCE_PATH:-}"
+LEGACY_WBOARD_SOURCE="${LEGACY_WBOARD_SOURCE:-}"
 LEGACY_UPLOADS_SOURCE="${LEGACY_UPLOADS_SOURCE:-}"
 LEGACY_ICONS_SOURCE="${LEGACY_ICONS_SOURCE:-}"
 
@@ -21,8 +22,7 @@ mkdir -p \
     "${DATA_ROOT}/app/code" \
     "${DATA_ROOT}/bootstrap/sqlite" \
     "${DATA_ROOT}/config" \
-    "${DATA_ROOT}/legacy/wboard/icons" \
-    "${DATA_ROOT}/legacy/wboard/uploads" \
+    "${DATA_ROOT}/legacy/wboard" \
     "${DATA_ROOT}/mariadb/data"
 
 if command -v rsync >/dev/null 2>&1; then
@@ -81,23 +81,38 @@ ROOT_DB_PASSWORD="$(grep '^MARIADB_ROOT_PASSWORD=' "${ENV_FILE}" | cut -d'=' -f2
 
 cp "${SQLITE_SOURCE_PATH}" "${DATA_ROOT}/bootstrap/sqlite/peoplecine-modern.sqlite"
 
-if [[ -n "${LEGACY_UPLOADS_SOURCE}" ]]; then
-    if command -v rsync >/dev/null 2>&1; then
-        rsync -a --delete "${LEGACY_UPLOADS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/uploads/"
-    else
-        rm -rf "${DATA_ROOT}/legacy/wboard/uploads"
-        mkdir -p "${DATA_ROOT}/legacy/wboard/uploads"
-        cp -a "${LEGACY_UPLOADS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/uploads/"
+if [[ -n "${LEGACY_WBOARD_SOURCE}" ]]; then
+    if [[ ! -d "${LEGACY_WBOARD_SOURCE}" ]]; then
+        echo "Legacy wboard source directory not found: ${LEGACY_WBOARD_SOURCE}" >&2
+        exit 1
     fi
-fi
 
-if [[ -n "${LEGACY_ICONS_SOURCE}" ]]; then
     if command -v rsync >/dev/null 2>&1; then
-        rsync -a --delete "${LEGACY_ICONS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/icons/"
+        rsync -a --delete "${LEGACY_WBOARD_SOURCE}/" "${DATA_ROOT}/legacy/wboard/"
     else
-        rm -rf "${DATA_ROOT}/legacy/wboard/icons"
-        mkdir -p "${DATA_ROOT}/legacy/wboard/icons"
-        cp -a "${LEGACY_ICONS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/icons/"
+        rm -rf "${DATA_ROOT}/legacy/wboard"
+        mkdir -p "${DATA_ROOT}/legacy/wboard"
+        cp -a "${LEGACY_WBOARD_SOURCE}/." "${DATA_ROOT}/legacy/wboard/"
+    fi
+else
+    if [[ -n "${LEGACY_UPLOADS_SOURCE}" ]]; then
+        if command -v rsync >/dev/null 2>&1; then
+            rsync -a --delete "${LEGACY_UPLOADS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/uploads/"
+        else
+            rm -rf "${DATA_ROOT}/legacy/wboard/uploads"
+            mkdir -p "${DATA_ROOT}/legacy/wboard/uploads"
+            cp -a "${LEGACY_UPLOADS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/uploads/"
+        fi
+    fi
+
+    if [[ -n "${LEGACY_ICONS_SOURCE}" ]]; then
+        if command -v rsync >/dev/null 2>&1; then
+            rsync -a --delete "${LEGACY_ICONS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/icons/"
+        else
+            rm -rf "${DATA_ROOT}/legacy/wboard/icons"
+            mkdir -p "${DATA_ROOT}/legacy/wboard/icons"
+            cp -a "${LEGACY_ICONS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/icons/"
+        fi
     fi
 fi
 

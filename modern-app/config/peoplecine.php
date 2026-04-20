@@ -5,6 +5,13 @@ return [
         'LEGACY_WBOARD_ROOT',
         base_path('../peoplecine/public_html/wboard')
     ),
+    'legacy_wboard_roots' => array_values(array_filter(array_unique([
+        env(
+            'LEGACY_WBOARD_ROOT',
+            base_path('../peoplecine/public_html/wboard')
+        ),
+        env('LEGACY_WBOARD_FALLBACK_ROOT'),
+    ]))),
     'post_image_limit' => (int) env('PEOPLECINE_POST_IMAGE_LIMIT', 12),
     'post_image_max_kb' => (int) env('PEOPLECINE_POST_IMAGE_MAX_KB', 4096),
     'post_image_max_width' => (int) env('PEOPLECINE_POST_IMAGE_MAX_WIDTH', 1920),

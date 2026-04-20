@@ -143,6 +143,46 @@ class AccessControlTest extends TestCase
         $this->assertTrue($member->isAdmin());
     }
 
+    public function test_admin_user_table_shows_address_and_phone_columns(): void
+    {
+        $admin = User::query()->create([
+            'username' => 'admin-contact',
+            'email' => 'admin-contact@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 9,
+            'legacy_authorize' => 'Admin',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $admin->id,
+            'display_name' => 'Admin Contact',
+        ]);
+
+        $member = User::query()->create([
+            'username' => 'member-contact',
+            'email' => 'member-contact@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 1,
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $member->id,
+            'display_name' => 'Member Contact',
+            'address' => '123 Archive Road',
+            'postal_code' => '10200',
+            'phone' => '0812345678',
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('Address')
+            ->assertSee('Phone')
+            ->assertSee('123 Archive Road 10200')
+            ->assertSee('0812345678');
+    }
+
     public function test_admin_can_set_user_password_from_admin_table(): void
     {
         $admin = User::query()->create([

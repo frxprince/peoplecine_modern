@@ -141,6 +141,8 @@
                                 </span>
                             </a>
                         </th>
+                        <th>{{ __('Address') }}</th>
+                        <th>{{ __('Phone') }}</th>
                         <th>
                             <a class="admin-user-table__sort" href="{{ $sortLink('legacy_level') }}">
                                 {{ __('Level') }}
@@ -210,6 +212,16 @@
                                 <div class="forum-last-meta">{{ $managedUser->username }}</div>
                             </td>
                             <td>{{ $managedUser->email ?: __('No email') }}</td>
+                            <td class="admin-user-table__address">
+                                @php($addressParts = array_filter([
+                                    $managedUser->profile?->address,
+                                    $managedUser->profile?->postal_code,
+                                ]))
+                                {{ $addressParts !== [] ? implode(' ', $addressParts) : __('Not available') }}
+                            </td>
+                            <td class="admin-user-table__phone">
+                                {{ $managedUser->profile?->phone ?: __('Not available') }}
+                            </td>
                             <td class="admin-user-table__cell-control">
                                 <select name="legacy_level" form="{{ $formId }}">
                                     @foreach ([0, 1, 2, 3, 4, 9] as $level)

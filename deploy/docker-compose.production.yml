@@ -17,6 +17,7 @@ services:
       - ../peoplecine_data/app/code:/var/www/html
       - ../peoplecine_data/bootstrap/sqlite:/var/www/peoplecine_data/bootstrap/sqlite
       - ../peoplecine_data/legacy/wboard:/var/www/peoplecine_data/legacy/wboard
+      - ../peoplecine/public_html/wboard:/var/www/legacy_source_wboard:ro
 
   db:
     image: mariadb:11.4

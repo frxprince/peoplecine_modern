@@ -14,13 +14,33 @@ class LegacyMediaPathResolver
             return null;
         }
 
-        $root = realpath((string) config('peoplecine.legacy_wboard_root'));
+        $roots = config('peoplecine.legacy_wboard_roots');
+
+        if (! is_array($roots) || $roots === []) {
+            $roots = [config('peoplecine.legacy_wboard_root')];
+        }
+
+        $normalized = ltrim(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
+
+        foreach ($roots as $rootPath) {
+            $resolved = $this->resolveAgainstRoot((string) $rootPath, $normalized);
+
+            if ($resolved !== null) {
+                return $resolved;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveAgainstRoot(string $rootPath, string $normalized): ?string
+    {
+        $root = realpath($rootPath);
 
         if ($root === false) {
             return null;
         }
 
-        $normalized = ltrim(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
         $candidate = $root.DIRECTORY_SEPARATOR.$normalized;
         $resolved = realpath($candidate);
 

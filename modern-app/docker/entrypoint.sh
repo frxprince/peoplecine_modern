@@ -10,18 +10,21 @@ mkdir -p \
     /var/www/html/storage/logs \
     /var/www/peoplecine_data/bootstrap/sqlite \
     /var/www/peoplecine_data/legacy/wboard/icons \
-    /var/www/peoplecine_data/legacy/wboard/uploads
+    /var/www/peoplecine_data/legacy/wboard/uploads \
+    /var/www/peoplecine_data/legacy/wboard/picpost
 
-chown -R www-data:www-data \
+chown www-data:www-data \
     /var/www/html/bootstrap/cache \
     /var/www/html/storage \
     /var/www/peoplecine_data/bootstrap/sqlite \
-    /var/www/peoplecine_data/legacy/wboard || true
+    /var/www/peoplecine_data/legacy/wboard/icons \
+    /var/www/peoplecine_data/legacy/wboard/uploads || true
 
-chmod -R ug+rwX \
+chmod ug+rwX \
     /var/www/html/bootstrap/cache \
     /var/www/html/storage \
     /var/www/peoplecine_data/bootstrap/sqlite \
-    /var/www/peoplecine_data/legacy/wboard || true
+    /var/www/peoplecine_data/legacy/wboard/icons \
+    /var/www/peoplecine_data/legacy/wboard/uploads || true
 
 exec "$@"

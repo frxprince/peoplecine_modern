@@ -4,3 +4,7 @@
 /modernization/
 /modern-app/tmp_debug.php
 /modern-app/storage/sqlite_probe*.php
+/.edge-headless/
+/landing-*.png
+/tmp_db_*.php
+/tmp_login_live.html

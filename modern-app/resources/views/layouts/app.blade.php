@@ -237,6 +237,15 @@
             @endif
 
             @yield('content')
+            <div class="page-footer-nav">
+                <button
+                    class="page-footer-nav__button"
+                    type="button"
+                    onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = @js(route('home')); }"
+                >
+                    {{ app()->getLocale() === 'th' ? 'ย้อนกลับ' : __('Go Back') }}
+                </button>
+            </div>
             </main>
         </div>
     </div>
