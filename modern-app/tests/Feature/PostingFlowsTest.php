@@ -128,6 +128,51 @@ class PostingFlowsTest extends TestCase
         $this->assertMatchesRegularExpression('#^picpost/\d{4}/\d{2}/#', (string) $attachments->first()?->legacy_path);
     }
 
+    public function test_level_three_member_can_post_image_only_reply(): void
+    {
+        $root = storage_path('app/private/test-image-only-reply-posting');
+        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'picpost');
+        config()->set('peoplecine.legacy_wboard_root', $root);
+
+        $user = $this->createMember('image-only-reply-user', 3);
+        $topic = $this->createTopic();
+        $upload = $this->makeImageUpload('image-only-reply.png');
+
+        $response = $this->actingAs($user)->post(route('topics.replies.store', $topic), [
+            'body_html' => '',
+            'attachments' => [$upload],
+        ]);
+
+        $response->assertRedirect(route('topics.show', $topic));
+
+        $post = Post::query()->where('legacy_source_table', 'modern_reply')->first();
+        $this->assertNotNull($post);
+        $this->assertSame('', $post->body_html);
+        $this->assertDatabaseHas('attachments', [
+            'attachable_type' => 'post',
+            'attachable_id' => $post->id,
+            'original_filename' => 'image-only-reply.png',
+        ]);
+    }
+
+    public function test_reply_without_text_or_images_is_still_rejected(): void
+    {
+        $user = $this->createMember('blank-reply-user', 3);
+        $topic = $this->createTopic();
+
+        $response = $this->from(route('topics.show', $topic))->actingAs($user)->post(route('topics.replies.store', $topic), [
+            'body_html' => '   ',
+        ]);
+
+        $response->assertRedirect(route('topics.show', $topic));
+        $response->assertSessionHasErrors('body_html');
+        $this->assertDatabaseMissing('posts', [
+            'topic_id' => $topic->id,
+            'legacy_source_table' => 'modern_reply',
+            'author_id' => $user->id,
+        ]);
+    }
+
     public function test_level_three_member_can_stage_uploads_and_create_topic(): void
     {
         $root = storage_path('app/private/test-staged-topic-posting');

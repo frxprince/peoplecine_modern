@@ -31,13 +31,13 @@ class PostedImageWatermarker
                 return $this->saveImageResource($image, $absolutePath, $imageType);
             }
 
-            $fontPath = (string) config('peoplecine.watermark_font_path', 'C:/Windows/Fonts/tahoma.ttf');
             $label = sprintf(
                 '%s | %s | %s',
                 (string) config('peoplecine.watermark_site_name', 'PeopleCine'),
                 $user->displayName(),
                 $timestamp->format((string) config('peoplecine.watermark_timestamp_format', 'Y-m-d H:i:s'))
             );
+            $fontPath = $this->resolveFontPath($label);
 
             $fontSize = max(9, min(18, (int) round($width / 62)));
             $margin = max(8, (int) config('peoplecine.watermark_margin', 14));
@@ -48,7 +48,7 @@ class PostedImageWatermarker
             imagealphablending($image, true);
             imagesavealpha($image, true);
 
-            if (is_file($fontPath) && function_exists('imagettftext')) {
+            if ($fontPath !== null && function_exists('imagettftext')) {
                 $textBox = imagettfbbox($fontSize, 0, $fontPath, $label);
 
                 if (is_array($textBox)) {
@@ -129,5 +129,67 @@ class PostedImageWatermarker
             IMAGETYPE_BMP => function_exists('imagebmp') ? imagebmp($image, $absolutePath) : false,
             default => false,
         };
+    }
+
+    private function resolveFontPath(string $label): ?string
+    {
+        $configuredCandidates = config('peoplecine.watermark_font_paths', []);
+
+        if (! is_array($configuredCandidates)) {
+            $configuredCandidates = [];
+        }
+
+        $singleConfiguredPath = trim((string) config('peoplecine.watermark_font_path', ''));
+        $preferThai = $this->containsThaiCharacters($label);
+
+        $candidates = array_values(array_filter(array_unique(array_merge(
+            array_map(static fn (mixed $path): string => trim((string) $path), $configuredCandidates),
+            $preferThai ? $this->defaultThaiFontCandidates() : [],
+            $singleConfiguredPath !== '' ? [$singleConfiguredPath] : [],
+            $this->defaultGeneralFontCandidates(),
+        ))));
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function containsThaiCharacters(string $text): bool
+    {
+        return preg_match('/\p{Thai}/u', $text) === 1;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function defaultThaiFontCandidates(): array
+    {
+        return [
+            'C:/Windows/Fonts/THSarabunNew.ttf',
+            'C:/Windows/Fonts/THSarabun.ttf',
+            'C:/Windows/Fonts/LeelawUI.ttf',
+            'C:/Windows/Fonts/tahoma.ttf',
+            '/usr/share/fonts/truetype/noto/NotoSansThai-Regular.ttf',
+            '/usr/share/fonts/truetype/noto/NotoSerifThai-Regular.ttf',
+            '/usr/share/fonts/truetype/tlwg/Garuda.ttf',
+            '/usr/share/fonts/truetype/tlwg/Loma.ttf',
+        ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function defaultGeneralFontCandidates(): array
+    {
+        return [
+            'C:/Windows/Fonts/tahoma.ttf',
+            'C:/Windows/Fonts/arial.ttf',
+            '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        ];
     }
 }

@@ -64,7 +64,7 @@ class TopicController extends Controller
         abort_if($topic->is_locked && ! $user?->isAdmin(), 403);
 
         $validated = $request->validate([
-            'body_html' => ['required', 'string'],
+            'body_html' => ['nullable', 'string'],
             'attachments' => ['nullable', 'array', 'max:'.$maxAttachments],
             'attachments.*' => ['file', 'image', 'mimes:jpg,jpeg,png,gif,bmp,webp', 'max:'.$maxAttachmentKilobytes],
             'staged_uploads' => ['nullable', 'array', 'max:'.$maxAttachments],
@@ -86,6 +86,14 @@ class TopicController extends Controller
             ]);
         }
 
+        $bodyHtml = trim((string) ($validated['body_html'] ?? ''));
+
+        if ($bodyHtml === '' && $attachments === [] && $stagedUploads === []) {
+            throw ValidationException::withMessages([
+                'body_html' => 'Please add a reply message or at least one image.',
+            ]);
+        }
+
         $now = now();
         $position = ((int) $topic->posts()->withTrashed()->max('position_in_topic')) + 1;
 
@@ -95,7 +103,7 @@ class TopicController extends Controller
             'legacy_source_table' => 'modern_reply',
             'legacy_source_id' => $this->nextModernSourceId('modern_reply'),
             'position_in_topic' => $position,
-            'body_html' => trim($validated['body_html']),
+            'body_html' => $bodyHtml,
             'ip_address' => $request->ip(),
             'created_at' => $now,
             'updated_at' => $now,
@@ -130,7 +138,7 @@ class TopicController extends Controller
 
         $validated = $request->validate([
             'editing_post_id' => ['required', 'integer'],
-            'message_body' => ['required', 'string'],
+            'message_body' => ['nullable', 'string'],
             'topic_title' => ['nullable', 'string', 'max:500'],
             'remove_attachment_ids' => ['nullable', 'array'],
             'remove_attachment_ids.*' => ['integer'],
@@ -170,7 +178,20 @@ class TopicController extends Controller
             ]);
         }
 
-        $newBody = trim($validated['message_body']);
+        $newBody = trim((string) ($validated['message_body'] ?? ''));
+
+        if ($post->isTopicStarter() && $newBody === '') {
+            throw ValidationException::withMessages([
+                'message_body' => 'Please add a message.',
+            ]);
+        }
+
+        if (! $post->isTopicStarter() && $newBody === '' && ($remainingAttachments + $incomingAttachments) === 0) {
+            throw ValidationException::withMessages([
+                'message_body' => 'Please add a reply message or keep at least one image.',
+            ]);
+        }
+
         $newTopicTitle = trim((string) ($validated['topic_title'] ?? ''));
         $bodyChanged = $newBody !== trim((string) $post->body_html);
         $titleChanged = $post->isTopicStarter()

@@ -21,8 +21,12 @@ return [
     'post_image_resize_quality' => (float) env('PEOPLECINE_POST_IMAGE_RESIZE_QUALITY', 0.9),
     'forum_search_cooldown_seconds' => (int) env('PEOPLECINE_FORUM_SEARCH_COOLDOWN_SECONDS', 6),
     'forum_search_burst_limit' => (int) env('PEOPLECINE_FORUM_SEARCH_BURST_LIMIT', 8),
-    'watermark_site_name' => env('PEOPLECINE_WATERMARK_SITE_NAME', 'PeopleCine'),
+    'watermark_site_name' => env('PEOPLECINE_WATERMARK_SITE_NAME', 'www.peoplecine.com'),
     'watermark_font_path' => env('PEOPLECINE_WATERMARK_FONT_PATH', 'C:/Windows/Fonts/tahoma.ttf'),
+    'watermark_font_paths' => array_values(array_filter(array_map(
+        static fn (string $path): string => trim($path),
+        explode('|', (string) env('PEOPLECINE_WATERMARK_FONT_PATHS', ''))
+    ))),
     'watermark_timestamp_format' => env('PEOPLECINE_WATERMARK_TIMESTAMP_FORMAT', 'Y-m-d H:i:s'),
     'watermark_margin' => (int) env('PEOPLECINE_WATERMARK_MARGIN', 14),
     'watermark_text_alpha' => (int) env('PEOPLECINE_WATERMARK_TEXT_ALPHA', 0),

@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         default-mysql-client \
         fonts-dejavu-core \
+        fonts-noto-core \
+        fonts-thai-tlwg \
         libfreetype6-dev \
         libicu-dev \
         libjpeg62-turbo-dev \
