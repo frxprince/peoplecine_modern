@@ -3,17 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Support\LegacyMediaPathResolver;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AvatarController extends Controller
 {
-    public function __invoke(User $user, LegacyMediaPathResolver $resolver): BinaryFileResponse
+    public function __invoke(User $user): BinaryFileResponse
     {
-        $path = $resolver->resolve($user->profile?->normalizedAvatarPath());
+        $relativePath = $user->profile?->normalizedAvatarPath();
+        $root = rtrim((string) config('peoplecine.legacy_wboard_root'), '\\/');
+        $path = $relativePath === null || $root === ''
+            ? null
+            : $root.DIRECTORY_SEPARATOR.str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath);
 
-        abort_if($path === null, 404);
+        abort_if($path === null || ! is_file($path), 404);
 
         $mimeType = File::mimeType($path) ?: 'application/octet-stream';
 

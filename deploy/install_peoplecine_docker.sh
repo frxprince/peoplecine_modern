@@ -95,6 +95,26 @@ copy_tree_preserving_existing() {
     fi
 }
 
+install_php_dependencies() {
+    local appRoot="$1"
+
+    if [[ ! -f "${appRoot}/composer.json" ]]; then
+        echo "composer.json not found in ${appRoot}" >&2
+        exit 1
+    fi
+
+    echo "Installing PHP dependencies into ${appRoot}..."
+
+    docker run --rm \
+        -v "${appRoot}:/app" \
+        -w /app \
+        composer:2 install \
+        --no-dev \
+        --prefer-dist \
+        --no-interaction \
+        --optimize-autoloader
+}
+
 if ! command -v docker >/dev/null 2>&1; then
     echo "docker is required but was not found in PATH." >&2
     exit 1
@@ -142,6 +162,10 @@ for directory in \
     "${DATA_ROOT}/app/code/storage/logs"; do
     ensure_directory "${directory}"
 done
+
+if [[ ! -f "${DATA_ROOT}/app/code/vendor/autoload.php" ]]; then
+    install_php_dependencies "${DATA_ROOT}/app/code"
+fi
 
 if [[ ! -f "${ENV_FILE}" ]]; then
     ensure_parent_directory_for_file "${ENV_FILE}"
