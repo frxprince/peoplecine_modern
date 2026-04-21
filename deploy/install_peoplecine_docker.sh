@@ -43,6 +43,58 @@ ensure_parent_directory_for_file() {
     fi
 }
 
+copy_file_if_missing() {
+    local source="$1"
+    local target="$2"
+
+    ensure_parent_directory_for_file "${target}"
+
+    if [[ -e "${target}" ]]; then
+        echo "Skipping existing file: ${target}"
+        return 0
+    fi
+
+    cp "${source}" "${target}"
+}
+
+copy_tree_preserving_existing() {
+    local source="$1"
+    local target="$2"
+
+    ensure_directory "${target}"
+
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --ignore-existing "${source}/" "${target}/"
+    else
+        (
+            cd "${source}"
+            find . -mindepth 1 \( -type d -o -type f \) -print0
+        ) | while IFS= read -r -d '' entry; do
+            local relative
+            local sourcePath
+            local targetPath
+
+            relative="${entry#./}"
+            sourcePath="${source}/${relative}"
+            targetPath="${target}/${relative}"
+
+            if [[ -d "${sourcePath}" ]]; then
+                ensure_directory "${targetPath}"
+                continue
+            fi
+
+            ensure_parent_directory_for_file "${targetPath}"
+
+            if [[ -e "${targetPath}" ]]; then
+                echo "Skipping existing file: ${targetPath}"
+                continue
+            fi
+
+            cp -p "${sourcePath}" "${targetPath}"
+        done
+    fi
+}
+
 if ! command -v docker >/dev/null 2>&1; then
     echo "docker is required but was not found in PATH." >&2
     exit 1
@@ -120,8 +172,7 @@ fi
 
 ROOT_DB_PASSWORD="$(grep '^MARIADB_ROOT_PASSWORD=' "${ENV_FILE}" | cut -d'=' -f2-)"
 
-ensure_parent_directory_for_file "${DATA_ROOT}/bootstrap/sqlite/peoplecine-modern.sqlite"
-cp "${SQLITE_SOURCE_PATH}" "${DATA_ROOT}/bootstrap/sqlite/peoplecine-modern.sqlite"
+copy_file_if_missing "${SQLITE_SOURCE_PATH}" "${DATA_ROOT}/bootstrap/sqlite/peoplecine-modern.sqlite"
 
 if [[ -n "${LEGACY_WBOARD_SOURCE}" ]]; then
     if [[ ! -d "${LEGACY_WBOARD_SOURCE}" ]]; then
@@ -129,32 +180,14 @@ if [[ -n "${LEGACY_WBOARD_SOURCE}" ]]; then
         exit 1
     fi
 
-    if command -v rsync >/dev/null 2>&1; then
-        rsync -a --delete "${LEGACY_WBOARD_SOURCE}/" "${DATA_ROOT}/legacy/wboard/"
-    else
-        rm -rf "${DATA_ROOT}/legacy/wboard"
-        mkdir -p "${DATA_ROOT}/legacy/wboard"
-        cp -a "${LEGACY_WBOARD_SOURCE}/." "${DATA_ROOT}/legacy/wboard/"
-    fi
+    copy_tree_preserving_existing "${LEGACY_WBOARD_SOURCE}" "${DATA_ROOT}/legacy/wboard"
 else
     if [[ -n "${LEGACY_UPLOADS_SOURCE}" ]]; then
-        if command -v rsync >/dev/null 2>&1; then
-            rsync -a --delete "${LEGACY_UPLOADS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/uploads/"
-        else
-            rm -rf "${DATA_ROOT}/legacy/wboard/uploads"
-            ensure_directory "${DATA_ROOT}/legacy/wboard/uploads"
-            cp -a "${LEGACY_UPLOADS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/uploads/"
-        fi
+        copy_tree_preserving_existing "${LEGACY_UPLOADS_SOURCE}" "${DATA_ROOT}/legacy/wboard/uploads"
     fi
 
     if [[ -n "${LEGACY_ICONS_SOURCE}" ]]; then
-        if command -v rsync >/dev/null 2>&1; then
-            rsync -a --delete "${LEGACY_ICONS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/icons/"
-        else
-            rm -rf "${DATA_ROOT}/legacy/wboard/icons"
-            ensure_directory "${DATA_ROOT}/legacy/wboard/icons"
-            cp -a "${LEGACY_ICONS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/icons/"
-        fi
+        copy_tree_preserving_existing "${LEGACY_ICONS_SOURCE}" "${DATA_ROOT}/legacy/wboard/icons"
     fi
 fi
 
