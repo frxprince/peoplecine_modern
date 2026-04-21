@@ -48,6 +48,22 @@
             @endif
 
             @if (auth()->user()->isAdmin())
+                    @if ($topic->is_pinned)
+                        <form method="POST" action="{{ route('topics.unpin', $topic) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button class="icon-button icon-button--topic-pin icon-button--active" type="submit" title="{{ __('Unpin topic') }}" aria-label="{{ __('Unpin topic') }}">
+                                <span class="icon-button__pin" aria-hidden="true">📌</span>
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('topics.pin', $topic) }}">
+                            @csrf
+                            <button class="icon-button icon-button--topic-pin" type="submit" title="{{ __('Pin topic') }}" aria-label="{{ __('Pin topic') }}">
+                                <span class="icon-button__pin" aria-hidden="true">📌</span>
+                            </button>
+                        </form>
+                    @endif
                     <form method="POST" action="{{ route('topics.destroy', $topic) }}" onsubmit="return confirm(@js(__('Delete this topic and all replies?')));">
                         @csrf
                         @method('DELETE')

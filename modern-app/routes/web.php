@@ -58,6 +58,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/topics/{topic}/replies', [TopicController::class, 'storeReply'])->name('topics.replies.store');
     Route::post('/topics/{topic}/bookmark', [TopicController::class, 'storeBookmark'])->name('topics.bookmarks.store');
     Route::delete('/topics/{topic}/bookmark', [TopicController::class, 'destroyBookmark'])->name('topics.bookmarks.destroy');
+    Route::post('/topics/{topic}/pin', [TopicController::class, 'pin'])->name('topics.pin');
+    Route::delete('/topics/{topic}/pin', [TopicController::class, 'unpin'])->name('topics.unpin');
     Route::put('/topics/{topic}/posts/{post}', [TopicController::class, 'updatePost'])->name('topics.posts.update');
     Route::delete('/topics/{topic}', [TopicController::class, 'destroyTopic'])->name('topics.destroy');
     Route::delete('/topics/{topic}/posts/{post}', [TopicController::class, 'destroyPost'])->name('topics.posts.destroy');

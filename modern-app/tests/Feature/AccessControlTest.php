@@ -590,6 +590,73 @@ class AccessControlTest extends TestCase
         $vipHome->assertSee('VIP Topic');
     }
 
+    public function test_admin_can_pin_and_unpin_topic_and_non_admin_cannot(): void
+    {
+        $admin = User::query()->create([
+            'username' => 'pin-admin',
+            'email' => 'pin-admin@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 9,
+            'legacy_authorize' => 'Admin',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $admin->id,
+            'display_name' => 'Pin Admin',
+        ]);
+
+        $member = User::query()->create([
+            'username' => 'plain-member',
+            'email' => 'plain-member@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 3,
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $member->id,
+            'display_name' => 'Plain Member',
+        ]);
+
+        $room = Room::query()->create([
+            'slug' => 'pin-room',
+            'name' => 'Pin Room',
+            'access_level' => 0,
+            'sort_order' => 1,
+            'is_archived' => false,
+        ]);
+
+        $topic = Topic::query()->create([
+            'room_id' => $room->id,
+            'author_id' => $member->id,
+            'title' => 'Pin Me',
+            'visibility_level' => 0,
+            'is_pinned' => false,
+            'is_locked' => false,
+            'view_count' => 0,
+            'reply_count' => 0,
+            'last_posted_at' => now(),
+        ]);
+
+        $this->actingAs($member)->post(route('topics.pin', $topic))->assertForbidden();
+        $this->actingAs($member)->delete(route('topics.unpin', $topic))->assertForbidden();
+
+        $this->actingAs($admin)->post(route('topics.pin', $topic))
+            ->assertRedirect(route('topics.show', $topic));
+        $topic->refresh();
+        $this->assertTrue($topic->is_pinned);
+
+        $this->actingAs($admin)->get(route('topics.show', $topic))
+            ->assertOk()
+            ->assertSee(route('topics.unpin', $topic), false);
+
+        $this->actingAs($admin)->delete(route('topics.unpin', $topic))
+            ->assertRedirect(route('topics.show', $topic));
+        $topic->refresh();
+        $this->assertFalse($topic->is_pinned);
+    }
+
     public function test_level_three_member_can_open_poster_profile_from_topic_page(): void
     {
         $poster = User::query()->create([

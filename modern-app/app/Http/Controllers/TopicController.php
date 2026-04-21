@@ -316,6 +316,40 @@ class TopicController extends Controller
             ->with('status', 'Topic removed from Saved Topics.');
     }
 
+    public function pin(Request $request, Topic $topic): RedirectResponse
+    {
+        $topic->load('room');
+
+        abort_unless($request->user()?->isAdmin(), 403);
+        abort_unless($topic->room?->isVisibleTo($request->user()) ?? false, 403);
+
+        $topic->forceFill([
+            'is_pinned' => true,
+            'updated_at' => now(),
+        ])->save();
+
+        return redirect()
+            ->route('topics.show', $topic)
+            ->with('status', 'Topic pinned.');
+    }
+
+    public function unpin(Request $request, Topic $topic): RedirectResponse
+    {
+        $topic->load('room');
+
+        abort_unless($request->user()?->isAdmin(), 403);
+        abort_unless($topic->room?->isVisibleTo($request->user()) ?? false, 403);
+
+        $topic->forceFill([
+            'is_pinned' => false,
+            'updated_at' => now(),
+        ])->save();
+
+        return redirect()
+            ->route('topics.show', $topic)
+            ->with('status', 'Topic unpinned.');
+    }
+
     private function nextModernSourceId(string $sourceTable): int
     {
         return ((int) Post::query()

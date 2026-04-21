@@ -38,6 +38,27 @@ class LegacyMediaServingTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_legacy_attachment_route_handles_uppercase_extension_on_linux(): void
+    {
+        $root = storage_path('app/private/test-legacy-media-uppercase');
+        $uploads = $root.DIRECTORY_SEPARATOR.'uploads';
+        File::ensureDirectoryExists($uploads);
+
+        File::put($uploads.DIRECTORY_SEPARATOR.'sample.JPG', 'fake-image-content');
+
+        config()->set('peoplecine.legacy_wboard_root', $root);
+
+        $attachment = Attachment::query()->create([
+            'attachable_type' => 'post',
+            'attachable_id' => 1,
+            'slot_no' => 1,
+            'legacy_path' => 'uploads/sample.jpg',
+            'original_filename' => 'sample.jpg',
+        ]);
+
+        $this->get(route('legacy-media.show', $attachment))->assertOk();
+    }
+
     public function test_topic_page_renders_attachment_image_tag(): void
     {
         $room = Room::query()->create([

@@ -141,4 +141,32 @@ class AvatarRenderingTest extends TestCase
         $avatarResponse = $this->get(route('avatars.show', $user));
         $avatarResponse->assertOk();
     }
+
+    public function test_avatar_route_handles_uppercase_legacy_extension_on_linux(): void
+    {
+        $root = storage_path('app/private/test-legacy-uppercase-avatar');
+        $icons = $root.DIRECTORY_SEPARATOR.'icons';
+        File::ensureDirectoryExists($icons);
+        File::put($icons.DIRECTORY_SEPARATOR.'15.JPG', 'avatar-bytes');
+
+        config()->set('peoplecine.legacy_wboard_root', $root);
+
+        $user = User::query()->create([
+            'legacy_memberx_id' => 9599,
+            'username' => 'uppercase-avatar',
+            'email' => 'uppercase-avatar@example.com',
+            'password' => Hash::make('secret'),
+            'password_reset_required' => false,
+            'role' => 'user',
+            'account_status' => 'active',
+        ]);
+
+        UserProfile::query()->create([
+            'user_id' => $user->id,
+            'display_name' => 'Uppercase Avatar',
+            'avatar_path' => 'icons/15.jpg',
+        ]);
+
+        $this->get(route('avatars.show', $user))->assertOk();
+    }
 }

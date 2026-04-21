@@ -875,8 +875,15 @@ h2 { font-size: 1.5rem; }
     border-color: #3e8d46;
     background: #eef9ef;
 }
+.icon-button--topic-pin {
+    border-color: #c08f1a;
+    background: #fff7e0;
+}
 .icon-button--pin:hover {
     background: #dff2e1;
+}
+.icon-button--topic-pin:hover {
+    background: #ffefbe;
 }
 .icon-button--facebook {
     border-color: #2e64b7;
@@ -908,6 +915,16 @@ h2 { font-size: 1.5rem; }
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
+}
+.icon-button__pin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.95rem;
+    height: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1;
+    color: #a66f00;
 }
 .icon-button__facebook {
     display: inline-block;
