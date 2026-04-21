@@ -264,13 +264,13 @@
         </section>
     @endif
     <script>
-        window.peoplecineTinyMceBase = @json(asset('vendor/tinymce'));
+        window.peoplecineTinyMceBase = @json('/vendor/tinymce');
     </script>
     <script src="{{ asset('js/cookie-consent.js') }}" defer></script>
     <script src="{{ asset('js/legacy-composer.js') }}" defer></script>
     <script src="{{ asset('js/staged-composer.js') }}" defer></script>
     @yield('pageScripts')
-    <script src="{{ asset('vendor/tinymce/tinymce.min.js') }}" defer></script>
+    <script src="/vendor/tinymce/tinymce.min.js" defer></script>
     <script src="{{ asset('js/legacy-tinymce.js') }}" defer></script>
 </body>
 </html>

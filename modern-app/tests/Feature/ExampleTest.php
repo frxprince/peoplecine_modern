@@ -22,5 +22,7 @@ class ExampleTest extends TestCase
         $response->assertSee('legacy-topnav__locale-text">TH', false);
         $response->assertSee('legacy-topnav__locale-text">EN', false);
         $response->assertSee('images/peoplecine-logo.png', false);
+        $response->assertSee('window.peoplecineTinyMceBase = "\/vendor\/tinymce"', false);
+        $response->assertSee('<script src="/vendor/tinymce/tinymce.min.js" defer></script>', false);
     }
 }
