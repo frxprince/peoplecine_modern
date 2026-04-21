@@ -24,7 +24,7 @@ class PostingFlowsTest extends TestCase
     public function test_level_three_member_can_create_topic_with_multiple_images(): void
     {
         $root = storage_path('app/private/test-topic-posting');
-        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'uploads');
+        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'picpost');
         config()->set('peoplecine.legacy_wboard_root', $root);
 
         $user = $this->createMember('topic-starter', 3);
@@ -58,7 +58,7 @@ class PostingFlowsTest extends TestCase
         $this->assertSame(1, $post->position_in_topic);
         $this->assertSame([1, 2], $attachments->pluck('slot_no')->all());
         $this->assertSame(['upload-1.png', 'upload-2.png'], $attachments->pluck('original_filename')->all());
-        $this->assertMatchesRegularExpression('#^uploads/\d{4}/\d{2}$#', dirname((string) $attachments->first()?->legacy_path));
+        $this->assertMatchesRegularExpression('#^picpost/\d{4}/\d{2}$#', dirname((string) $attachments->first()?->legacy_path));
         $this->assertFileExists($root.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, (string) $attachments->first()?->legacy_path));
     }
 
@@ -99,7 +99,7 @@ class PostingFlowsTest extends TestCase
     public function test_level_three_member_can_post_reply_with_multiple_images(): void
     {
         $root = storage_path('app/private/test-reply-multi-image-posting');
-        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'uploads');
+        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'picpost');
         config()->set('peoplecine.legacy_wboard_root', $root);
 
         $user = $this->createMember('reply-starter', 3);
@@ -125,13 +125,13 @@ class PostingFlowsTest extends TestCase
         $this->assertCount(2, $attachments);
         $this->assertSame([1, 2], $attachments->pluck('slot_no')->all());
         $this->assertSame(['reply-1.png', 'reply-2.png'], $attachments->pluck('original_filename')->all());
-        $this->assertMatchesRegularExpression('#^uploads/\d{4}/\d{2}/#', (string) $attachments->first()?->legacy_path);
+        $this->assertMatchesRegularExpression('#^picpost/\d{4}/\d{2}/#', (string) $attachments->first()?->legacy_path);
     }
 
     public function test_level_three_member_can_stage_uploads_and_create_topic(): void
     {
         $root = storage_path('app/private/test-staged-topic-posting');
-        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'uploads');
+        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'picpost');
         config()->set('peoplecine.legacy_wboard_root', $root);
 
         $user = $this->createMember('staged-topic-user', 3);
@@ -152,7 +152,7 @@ class PostingFlowsTest extends TestCase
         $attachments = Attachment::query()->orderBy('slot_no')->get();
         $this->assertCount(2, $attachments);
         $this->assertSame(['stage-topic-1.png', 'stage-topic-2.png'], $attachments->pluck('original_filename')->all());
-        $this->assertMatchesRegularExpression('#^uploads/\d{4}/\d{2}/#', (string) $attachments->first()?->legacy_path);
+        $this->assertMatchesRegularExpression('#^picpost/\d{4}/\d{2}/#', (string) $attachments->first()?->legacy_path);
         $this->assertDatabaseHas('staged_uploads', ['token' => $firstToken]);
         $this->assertDatabaseHas('staged_uploads', ['token' => $secondToken]);
         $this->assertNotNull(StagedUpload::query()->where('token', $firstToken)->value('claimed_at'));
@@ -162,7 +162,7 @@ class PostingFlowsTest extends TestCase
     public function test_level_three_member_can_stage_upload_and_post_reply(): void
     {
         $root = storage_path('app/private/test-staged-reply-posting');
-        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'uploads');
+        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'picpost');
         config()->set('peoplecine.legacy_wboard_root', $root);
 
         $user = $this->createMember('staged-reply-user', 3);
@@ -184,7 +184,7 @@ class PostingFlowsTest extends TestCase
             'original_filename' => 'stage-reply-1.png',
         ]);
         $this->assertMatchesRegularExpression(
-            '#^uploads/\d{4}/\d{2}/#',
+            '#^picpost/\d{4}/\d{2}/#',
             (string) Attachment::query()->where('attachable_type', 'post')->where('attachable_id', $post->id)->value('legacy_path')
         );
         $this->assertNotNull(StagedUpload::query()->where('token', $token)->value('claimed_at'));
@@ -204,7 +204,7 @@ class PostingFlowsTest extends TestCase
     public function test_level_one_member_cannot_upload_reply_image(): void
     {
         $root = storage_path('app/private/test-reply-image-rejection');
-        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'uploads');
+        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'picpost');
         config()->set('peoplecine.legacy_wboard_root', $root);
 
         $user = $this->createMember('reply-member', 1);
@@ -294,7 +294,7 @@ class PostingFlowsTest extends TestCase
             'original_filename' => 'new-image.png',
         ]);
         $this->assertMatchesRegularExpression(
-            '#^uploads/\d{4}/\d{2}/#',
+            '#^picpost/\d{4}/\d{2}/#',
             (string) Attachment::query()->where('attachable_type', 'post')->where('attachable_id', $reply->id)->value('legacy_path')
         );
         $this->assertDatabaseMissing('attachments', [

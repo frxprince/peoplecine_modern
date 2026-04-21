@@ -16,6 +16,7 @@ return [
     'post_image_max_kb' => (int) env('PEOPLECINE_POST_IMAGE_MAX_KB', 4096),
     'post_image_max_width' => (int) env('PEOPLECINE_POST_IMAGE_MAX_WIDTH', 1920),
     'post_image_max_height' => (int) env('PEOPLECINE_POST_IMAGE_MAX_HEIGHT', 1080),
+    'post_image_base_directory' => env('PEOPLECINE_POST_IMAGE_BASE_DIRECTORY', 'picpost'),
     'post_image_directory_pattern' => env('PEOPLECINE_POST_IMAGE_DIRECTORY_PATTERN', 'Y/m'),
     'post_image_resize_quality' => (float) env('PEOPLECINE_POST_IMAGE_RESIZE_QUALITY', 0.9),
     'forum_search_cooldown_seconds' => (int) env('PEOPLECINE_FORUM_SEARCH_COOLDOWN_SECONDS', 6),

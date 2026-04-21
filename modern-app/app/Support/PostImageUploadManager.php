@@ -321,8 +321,9 @@ class PostImageUploadManager
     private function legacyUploadsRoot(): string
     {
         $root = rtrim((string) config('peoplecine.legacy_wboard_root'), '\\/');
+        $baseDirectory = trim((string) config('peoplecine.post_image_base_directory', 'picpost'), '\\/');
 
-        return $root.DIRECTORY_SEPARATOR.'uploads';
+        return $root.DIRECTORY_SEPARATOR.$baseDirectory;
     }
 
     /**
@@ -331,11 +332,12 @@ class PostImageUploadManager
     private function legacyUploadsDirectoryInfo(DateTimeInterface $timestamp): array
     {
         $uploadsRoot = $this->legacyUploadsRoot();
+        $baseDirectory = trim((string) config('peoplecine.post_image_base_directory', 'picpost'), '\\/');
         $pattern = trim((string) config('peoplecine.post_image_directory_pattern', 'Y/m'));
         $subdirectory = trim($pattern !== '' ? $timestamp->format($pattern) : '', '\\/');
 
         if ($subdirectory === '') {
-            return [$uploadsRoot, 'uploads'];
+            return [$uploadsRoot, $baseDirectory];
         }
 
         $normalizedSubdirectory = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $subdirectory);
@@ -343,7 +345,7 @@ class PostImageUploadManager
 
         return [
             $uploadsRoot.DIRECTORY_SEPARATOR.$normalizedSubdirectory,
-            'uploads/'.$legacySubdirectory,
+            $baseDirectory.'/'.$legacySubdirectory,
         ];
     }
 
