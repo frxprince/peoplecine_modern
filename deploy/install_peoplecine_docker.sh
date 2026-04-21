@@ -13,17 +13,49 @@ LEGACY_WBOARD_SOURCE="${LEGACY_WBOARD_SOURCE:-}"
 LEGACY_UPLOADS_SOURCE="${LEGACY_UPLOADS_SOURCE:-}"
 LEGACY_ICONS_SOURCE="${LEGACY_ICONS_SOURCE:-}"
 
+abort_path_conflict() {
+    local path="$1"
+    local expected="$2"
+
+    echo "Path conflict: ${path} exists but is not a ${expected}." >&2
+    exit 1
+}
+
+ensure_directory() {
+    local path="$1"
+
+    if [[ -e "${path}" && ! -d "${path}" ]]; then
+        abort_path_conflict "${path}" "directory"
+    fi
+
+    mkdir -p "${path}"
+}
+
+ensure_parent_directory_for_file() {
+    local path="$1"
+    local parent
+
+    parent="$(dirname "${path}")"
+    ensure_directory "${parent}"
+
+    if [[ -d "${path}" ]]; then
+        abort_path_conflict "${path}" "file"
+    fi
+}
+
 if ! command -v docker >/dev/null 2>&1; then
     echo "docker is required but was not found in PATH." >&2
     exit 1
 fi
 
-mkdir -p \
+for directory in \
     "${DATA_ROOT}/app/code" \
     "${DATA_ROOT}/bootstrap/sqlite" \
     "${DATA_ROOT}/config" \
     "${DATA_ROOT}/legacy/wboard" \
-    "${DATA_ROOT}/mariadb/data"
+    "${DATA_ROOT}/mariadb/data"; do
+    ensure_directory "${directory}"
+done
 
 if command -v rsync >/dev/null 2>&1; then
     rsync -a --delete \
@@ -38,23 +70,32 @@ if command -v rsync >/dev/null 2>&1; then
         --exclude 'database/*.sqlite-journal' \
         "${PROJECT_ROOT}/modern-app/" "${DATA_ROOT}/app/code/"
 else
+    if [[ -e "${DATA_ROOT}/app/code" && ! -d "${DATA_ROOT}/app/code" ]]; then
+        abort_path_conflict "${DATA_ROOT}/app/code" "directory"
+    fi
+
     rm -rf "${DATA_ROOT}/app/code"
-    mkdir -p "${DATA_ROOT}/app/code"
+    ensure_directory "${DATA_ROOT}/app/code"
     cp -a "${PROJECT_ROOT}/modern-app/." "${DATA_ROOT}/app/code/"
     rm -f "${DATA_ROOT}/app/code/.env"
     rm -f "${DATA_ROOT}/app/code/database/"*.sqlite "${DATA_ROOT}/app/code/database/"*.sqlite-journal 2>/dev/null || true
 fi
 
-mkdir -p \
+for directory in \
     "${DATA_ROOT}/app/code/bootstrap/cache" \
     "${DATA_ROOT}/app/code/storage/app/private" \
     "${DATA_ROOT}/app/code/storage/framework/cache" \
     "${DATA_ROOT}/app/code/storage/framework/sessions" \
     "${DATA_ROOT}/app/code/storage/framework/views" \
-    "${DATA_ROOT}/app/code/storage/logs"
+    "${DATA_ROOT}/app/code/storage/logs"; do
+    ensure_directory "${directory}"
+done
 
 if [[ ! -f "${ENV_FILE}" ]]; then
+    ensure_parent_directory_for_file "${ENV_FILE}"
     cp "${ENV_TEMPLATE}" "${ENV_FILE}"
+elif [[ -d "${ENV_FILE}" ]]; then
+    abort_path_conflict "${ENV_FILE}" "file"
 fi
 
 if grep -q '^APP_KEY=$' "${ENV_FILE}"; then
@@ -79,6 +120,7 @@ fi
 
 ROOT_DB_PASSWORD="$(grep '^MARIADB_ROOT_PASSWORD=' "${ENV_FILE}" | cut -d'=' -f2-)"
 
+ensure_parent_directory_for_file "${DATA_ROOT}/bootstrap/sqlite/peoplecine-modern.sqlite"
 cp "${SQLITE_SOURCE_PATH}" "${DATA_ROOT}/bootstrap/sqlite/peoplecine-modern.sqlite"
 
 if [[ -n "${LEGACY_WBOARD_SOURCE}" ]]; then
@@ -100,7 +142,7 @@ else
             rsync -a --delete "${LEGACY_UPLOADS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/uploads/"
         else
             rm -rf "${DATA_ROOT}/legacy/wboard/uploads"
-            mkdir -p "${DATA_ROOT}/legacy/wboard/uploads"
+            ensure_directory "${DATA_ROOT}/legacy/wboard/uploads"
             cp -a "${LEGACY_UPLOADS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/uploads/"
         fi
     fi
@@ -110,7 +152,7 @@ else
             rsync -a --delete "${LEGACY_ICONS_SOURCE}/" "${DATA_ROOT}/legacy/wboard/icons/"
         else
             rm -rf "${DATA_ROOT}/legacy/wboard/icons"
-            mkdir -p "${DATA_ROOT}/legacy/wboard/icons"
+            ensure_directory "${DATA_ROOT}/legacy/wboard/icons"
             cp -a "${LEGACY_ICONS_SOURCE}/." "${DATA_ROOT}/legacy/wboard/icons/"
         fi
     fi
