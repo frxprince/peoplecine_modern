@@ -173,9 +173,10 @@ class PostedImageWatermarker
             'C:/Windows/Fonts/THSarabun.ttf',
             'C:/Windows/Fonts/LeelawUI.ttf',
             'C:/Windows/Fonts/tahoma.ttf',
+            '/usr/share/fonts/truetype/tlwg/Garuda.ttf',
+            '/usr/share/fonts/truetype/tlwg/Waree.ttf',
             '/usr/share/fonts/truetype/noto/NotoSansThai-Regular.ttf',
             '/usr/share/fonts/truetype/noto/NotoSerifThai-Regular.ttf',
-            '/usr/share/fonts/truetype/tlwg/Garuda.ttf',
             '/usr/share/fonts/truetype/tlwg/Loma.ttf',
         ];
     }
