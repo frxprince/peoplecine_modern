@@ -44,6 +44,65 @@
 
     <section class="panel">
         <div class="panel__header">
+            <h2>{{ __('Mail Test') }}</h2>
+            <p>{{ __('Send a small test email from the current Laravel mail configuration.') }}</p>
+        </div>
+
+        <form class="admin-search-form" method="POST" action="{{ route('admin.users.mail-test', $queryState) }}">
+            @csrf
+            <input name="page" type="hidden" value="{{ $users->currentPage() }}">
+            <input name="sort" type="hidden" value="{{ $currentSort }}">
+            <input name="direction" type="hidden" value="{{ $currentDirection }}">
+            <input name="search" type="hidden" value="{{ $currentSearch }}">
+
+            <label class="admin-search-form__label" for="mail-test-recipient">{{ __('Recipient email') }}</label>
+            <input
+                id="mail-test-recipient"
+                class="admin-search-form__input"
+                name="recipient_email"
+                type="email"
+                value="{{ old('recipient_email') }}"
+                placeholder="peoplecine@drpaween.com"
+                required
+            >
+
+            <label class="admin-search-form__label" for="mail-test-subject">{{ __('Subject') }}</label>
+            <input
+                id="mail-test-subject"
+                class="admin-search-form__input"
+                name="subject_line"
+                type="text"
+                value="{{ old('subject_line', 'PeopleCine mail test') }}"
+                maxlength="160"
+            >
+
+            <label class="admin-search-form__label" for="mail-test-body">{{ __('Message') }}</label>
+            <textarea
+                id="mail-test-body"
+                class="admin-search-form__input"
+                name="body_text"
+                rows="4"
+            >{{ old('body_text', "This is a test email from the PeopleCine admin panel.") }}</textarea>
+
+            <button class="button button--small" type="submit">{{ __('Send Test Email') }}</button>
+        </form>
+
+        @error('mail_test')
+            <p class="form-error">{{ $message }}</p>
+        @enderror
+        @error('recipient_email')
+            <p class="form-error">{{ $message }}</p>
+        @enderror
+        @error('subject_line')
+            <p class="form-error">{{ $message }}</p>
+        @enderror
+        @error('body_text')
+            <p class="form-error">{{ $message }}</p>
+        @enderror
+    </section>
+
+    <section class="panel">
+        <div class="panel__header">
             <h2>{{ __('Members') }}</h2>
             <p>{{ __(':count imported accounts.', ['count' => number_format($users->total())]) }}</p>
         </div>

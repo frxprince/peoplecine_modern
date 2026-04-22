@@ -12,6 +12,7 @@
 <body>
     @php($cookieConsent = request()->cookie('peoplecine_cookie_consent'))
     @php($currentLocale = app()->getLocale())
+    @php($projectorManualLabel = $currentLocale === 'th' ? 'คู่มือโปรเจคเตอร์' : 'Projector manual')
     <div class="legacy-shell">
         <header class="legacy-header">
             <div class="legacy-header__banner">
@@ -27,7 +28,7 @@
                     <div>
                         <p class="legacy-header__tag">peoplecine.com</p>
                         <h1>{{ __('PeopleCine Main Forum') }}</h1>
-                    <p class="legacy-header__subtitle">{{ __('Movie lovers community, rebuilt on Laravel with the original forum spirit kept intact.') }}</p>
+                    <p class="legacy-header__subtitle">{{ __('Open-air cinema community') }}</p>
                     </div>
                 </div>
                 <div class="legacy-header__stats">
@@ -40,7 +41,7 @@
 
             <nav class="legacy-topnav">
                 <a href="{{ route('home') }}">{{ __('Main Forum') }}</a>
-                <a href="{{ route('articles.index') }}">{{ __('Articles') }}</a>
+                <a href="{{ route('projector-manual.index') }}">{{ $projectorManualLabel }}</a>
                 <a href="{{ route('search.index') }}">{{ __('Search') }}</a>
                 <details class="legacy-topnav__group">
                     <summary>{{ __('Calculators') }}</summary>
@@ -132,7 +133,7 @@
                 <section class="legacy-menu">
                     <h2>PEOPLECINE</h2>
                     <a href="{{ route('home') }}">{{ __('Main Forum') }}</a>
-                    <a href="{{ route('articles.index') }}">{{ __('Article Archive') }}</a>
+                    <a href="{{ route('projector-manual.index') }}">{{ $projectorManualLabel }}</a>
                     <a href="{{ route('search.index') }}">{{ __('Forum Search') }}</a>
                     <details class="legacy-menu__group">
                         <summary>{{ __('Calculators') }}</summary>

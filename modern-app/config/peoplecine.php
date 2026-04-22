@@ -12,6 +12,7 @@ return [
         ),
         env('LEGACY_WBOARD_FALLBACK_ROOT'),
     ]))),
+    'article_pdf_root' => env('PEOPLECINE_ARTICLE_PDF_ROOT', public_path('legacy-article-pdf')),
     'post_image_limit' => (int) env('PEOPLECINE_POST_IMAGE_LIMIT', 12),
     'post_image_max_kb' => (int) env('PEOPLECINE_POST_IMAGE_MAX_KB', 4096),
     'post_image_max_width' => (int) env('PEOPLECINE_POST_IMAGE_MAX_WIDTH', 1920),

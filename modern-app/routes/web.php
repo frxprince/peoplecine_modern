@@ -13,10 +13,13 @@ use App\Http\Controllers\CalculatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectMessagePreferenceController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegacyArticleMediaController;
+use App\Http\Controllers\LegacyArticlePdfController;
 use App\Http\Controllers\LegacyMediaController;
 use App\Http\Controllers\PrivateMessageController;
 use App\Http\Controllers\ComposerUploadController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\ProjectorManualController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SearchController;
@@ -33,10 +36,13 @@ Route::get('/calculator/throw/{screen}', [CalculatorController::class, 'throwCal
 Route::get('/calculator/lenssim', [CalculatorController::class, 'lensSimulation'])->name('calculator.lenssim');
 Route::get('/calculator/screendesign', [CalculatorController::class, 'screenDesign'])->name('calculator.screendesign');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get('/projector-manual', [ProjectorManualController::class, 'index'])->name('projector-manual.index');
 Route::get('/rooms/{room:slug}', [RoomController::class, 'show'])->name('rooms.show');
 Route::get('/topics/{topic}', [TopicController::class, 'show'])->name('topics.show');
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/articles/pdf/{filename}', LegacyArticlePdfController::class)->where('filename', '[^/\\\\]+')->name('legacy-article-pdf.show');
 Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/legacy-article-media', LegacyArticleMediaController::class)->name('legacy-article-media.show');
 Route::get('/legacy-media/{attachment}', LegacyMediaController::class)->name('legacy-media.show');
 Route::get('/avatars/{user}', AvatarController::class)->name('avatars.show');
 
@@ -92,6 +98,7 @@ Route::middleware(['auth', 'password.reset.completed', 'admin'])->prefix('admin'
     Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
     Route::put('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
     Route::put('/users/{user}/password', [UserManagementController::class, 'updatePassword'])->name('users.password.update');
+    Route::post('/users/mail-test', [UserManagementController::class, 'sendTestMail'])->name('users.mail-test');
     Route::delete('/users', [UserManagementController::class, 'destroyMany'])->name('users.destroy-many');
     Route::get('/rooms', [RoomManagementController::class, 'index'])->name('rooms.index');
     Route::post('/rooms', [RoomManagementController::class, 'store'])->name('rooms.store');

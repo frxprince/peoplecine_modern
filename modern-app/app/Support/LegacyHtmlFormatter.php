@@ -6,6 +6,7 @@ use DOMDocument;
 use DOMElement;
 use DOMNode;
 use DOMText;
+use Illuminate\Support\Str;
 
 class LegacyHtmlFormatter
 {
@@ -275,12 +276,119 @@ class LegacyHtmlFormatter
 
             if (in_array($normalizedName, self::URI_ATTRIBUTES, true)) {
                 $value = trim($element->getAttribute($attributeName));
+                $rewritten = self::rewriteLegacyArticleUrl($value);
+
+                if ($rewritten !== null) {
+                    $element->setAttribute($attributeName, $rewritten);
+                    $value = $rewritten;
+                }
 
                 if (! self::isSafeUrl($value)) {
                     $element->removeAttribute($attributeName);
                 }
             }
         }
+    }
+
+    private static function rewriteLegacyArticleUrl(string $value): ?string
+    {
+        if ($value === '') {
+            return null;
+        }
+
+        $pdfPath = self::extractLegacyArticlePdfPath($value);
+
+        if ($pdfPath !== null) {
+            return route('legacy-article-pdf.show', ['filename' => $pdfPath], false);
+        }
+
+        $path = self::extractLegacyArticlePath($value);
+
+        if ($path === null) {
+            return null;
+        }
+
+        return route('legacy-article-media.show', ['path' => $path], false);
+    }
+
+    private static function extractLegacyArticlePath(string $value): ?string
+    {
+        if (preg_match('/[\x00-\x1F\x7F]/u', $value) === 1) {
+            return null;
+        }
+
+        $parts = parse_url($value);
+
+        if ($parts === false) {
+            return null;
+        }
+
+        $host = Str::lower((string) ($parts['host'] ?? ''));
+        $path = str_replace('\\', '/', (string) ($parts['path'] ?? ''));
+
+        if ($path === '' && ! str_starts_with($value, '/')) {
+            return null;
+        }
+
+        if ($host !== '' && ! in_array($host, ['thaicine.com', 'www.thaicine.com', 'peoplecine.com', 'www.peoplecine.com'], true)) {
+            return null;
+        }
+
+        $segments = preg_split('~/+~', ltrim($path, '/')) ?: [];
+        $wboardIndex = array_search('wboard', array_map(static fn ($segment) => Str::lower($segment), $segments), true);
+
+        if ($wboardIndex !== false) {
+            $segments = array_slice($segments, $wboardIndex + 1);
+        }
+
+        if ($segments === [] || Str::lower($segments[0]) !== 'articles') {
+            return null;
+        }
+
+        $normalized = implode('/', array_filter($segments, static fn ($segment) => $segment !== ''));
+
+        return $normalized !== '' ? $normalized : null;
+    }
+
+    private static function extractLegacyArticlePdfPath(string $value): ?string
+    {
+        if (preg_match('/[\x00-\x1F\x7F]/u', $value) === 1) {
+            return null;
+        }
+
+        $normalizedValue = str_replace('\\', '/', trim($value));
+
+        if (preg_match('~^pdf/([^/?#]+\.pdf)$~iu', ltrim($normalizedValue, '/'), $matches) === 1) {
+            return basename($matches[1]);
+        }
+
+        $parts = parse_url($normalizedValue);
+
+        if ($parts === false) {
+            return null;
+        }
+
+        $host = Str::lower((string) ($parts['host'] ?? ''));
+
+        if ($host !== '' && ! in_array($host, ['thaicine.com', 'www.thaicine.com', 'peoplecine.com', 'www.peoplecine.com'], true)) {
+            return null;
+        }
+
+        $path = str_replace('\\', '/', (string) ($parts['path'] ?? ''));
+        $segments = preg_split('~/+~', ltrim($path, '/')) ?: [];
+        $lowerSegments = array_map(static fn ($segment) => Str::lower($segment), $segments);
+        $wboardIndex = array_search('wboard', $lowerSegments, true);
+
+        if ($wboardIndex !== false) {
+            $segments = array_slice($segments, $wboardIndex + 1);
+            $lowerSegments = array_slice($lowerSegments, $wboardIndex + 1);
+        }
+
+        if (($lowerSegments[0] ?? null) !== 'pdf' || ! isset($segments[1])) {
+            return null;
+        }
+
+        return basename($segments[1]);
     }
 
     private static function isSafeUrl(string $value): bool

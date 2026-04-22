@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class AccessControlTest extends TestCase
@@ -218,15 +219,65 @@ class AccessControlTest extends TestCase
             'new_password_confirmation' => 'NewSecret123!',
         ]);
 
-        $response->assertRedirect(route('admin.users.index', [
-            'page' => 1,
-            'sort' => 'role',
-            'direction' => 'desc',
-        ]));
+        $response->assertStatus(302);
+        $this->assertStringContainsString('/admin/users', (string) $response->headers->get('Location'));
 
         $member->refresh();
         $this->assertTrue(Hash::check('NewSecret123!', (string) $member->password));
         $this->assertFalse($member->requiresPasswordReset());
+    }
+
+    public function test_admin_can_send_test_email_and_non_admin_cannot(): void
+    {
+        Mail::fake();
+
+        $admin = User::query()->create([
+            'username' => 'admin-mail',
+            'email' => 'admin-mail@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 9,
+            'legacy_authorize' => 'Admin',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $admin->id,
+            'display_name' => 'Admin Mail',
+        ]);
+
+        $member = User::query()->create([
+            'username' => 'member-mail',
+            'email' => 'member-mail@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 1,
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $member->id,
+            'display_name' => 'Member Mail',
+        ]);
+
+        $this->actingAs($member)->post(route('admin.users.mail-test'), [
+            'recipient_email' => 'recipient@example.com',
+            'subject_line' => 'Forbidden test',
+            'body_text' => 'Forbidden body',
+        ])->assertForbidden();
+
+        $response = $this->actingAs($admin)->post(route('admin.users.mail-test'), [
+            'recipient_email' => 'recipient@example.com',
+            'subject_line' => 'Admin test message',
+            'body_text' => 'Mail body from the admin page.',
+        ]);
+
+        $response->assertStatus(302);
+        $this->assertStringContainsString('/admin/users', (string) $response->headers->get('Location'));
+
+        Mail::assertSent(\App\Mail\AdminTestMail::class, function ($mail) {
+            return $mail->hasTo('recipient@example.com')
+                && $mail->subjectLine === 'Admin test message'
+                && $mail->bodyText === 'Mail body from the admin page.';
+        });
     }
 
     public function test_admin_can_manage_room_access_permissions_create_rooms_and_non_admin_cannot(): void

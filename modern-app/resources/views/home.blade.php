@@ -1,5 +1,7 @@
 @extends('layouts.app', ['title' => __('PeopleCine Main Forum')])
 
+@php($projectorManualLabel = app()->getLocale() === 'th' ? 'คู่มือโปรเจคเตอร์' : 'Projector manual')
+
 @section('content')
     <section class="forum-intro">
         <div class="forum-intro__main">
@@ -15,7 +17,7 @@
             @else
                 <a class="legacy-link-button" href="{{ route('login') }}">{{ __('Member Login') }}</a>
             @endauth
-            <a class="legacy-link-button legacy-link-button--secondary" href="{{ route('articles.index') }}">{{ __('Article Archive') }}</a>
+            <a class="legacy-link-button legacy-link-button--secondary" href="{{ route('projector-manual.index') }}">{{ $projectorManualLabel }}</a>
         </div>
     </section>
 
