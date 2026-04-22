@@ -20,6 +20,7 @@ use App\Http\Controllers\LegacyMediaController;
 use App\Http\Controllers\PrivateMessageController;
 use App\Http\Controllers\ComposerUploadController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\ManagedBannerController;
 use App\Http\Controllers\ProjectorManualController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
@@ -46,6 +47,10 @@ Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name
 Route::get('/legacy-article-media', LegacyArticleMediaController::class)->name('legacy-article-media.show');
 Route::get('/legacy-media/{attachment}', LegacyMediaController::class)->name('legacy-media.show');
 Route::get('/avatars/{user}', AvatarController::class)->name('avatars.show');
+Route::get('/managed-banners/{section}/{filename}', ManagedBannerController::class)
+    ->where('section', 'sidebar|landing')
+    ->where('filename', '[^/\\\\]+')
+    ->name('managed-banners.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');

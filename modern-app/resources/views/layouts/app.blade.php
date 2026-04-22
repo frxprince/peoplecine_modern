@@ -22,6 +22,7 @@
 <body>
     @php($cookieConsent = request()->cookie('peoplecine_cookie_consent'))
     @php($currentLocale = app()->getLocale())
+    @php($changePasswordLabel = $currentLocale === 'th' ? 'เปลี่ยนรหัสผ่าน' : 'Change Password')
     @php($projectorManualLabel = $currentLocale === 'th' ? 'คู่มือโปรเจคเตอร์' : 'Projector manual')
     <div class="legacy-shell">
         <header class="legacy-header">
@@ -69,7 +70,7 @@
                         @endif
                     </a>
                     <a href="{{ route('profile.edit') }}">{{ __('Profile') }}</a>
-                    <a href="{{ route('password.edit') }}">{{ __('Change Password') }}</a>
+                    <a href="{{ route('password.edit') }}">{{ $changePasswordLabel }}</a>
                     @if (auth()->user()?->isAdmin())
                         <details class="legacy-topnav__group">
                             <summary>{{ __('Admin') }}</summary>
@@ -224,7 +225,7 @@
                         </a>
                         <a href="{{ route('messages.create') }}">{{ __('Write Message') }}</a>
                         <a href="{{ route('profile.edit') }}">{{ __('Edit Profile') }}</a>
-                        <a href="{{ route('password.edit') }}">{{ __('Change Password') }}</a>
+                        <a href="{{ route('password.edit') }}">{{ $changePasswordLabel }}</a>
                         @if (auth()->user()?->isAdmin())
                             <details class="legacy-menu__group">
                                 <summary>{{ __('Admin') }}</summary>

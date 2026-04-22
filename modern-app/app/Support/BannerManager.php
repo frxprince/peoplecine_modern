@@ -284,9 +284,35 @@ class BannerManager
 
     private function versionedAssetUrl(string $path): string
     {
-        $url = asset($path);
+        $url = $this->bannerUrl($path);
         $version = $this->fileVersion($path);
 
         return $version !== null ? $url.'?v='.$version : $url;
+    }
+
+    private function bannerUrl(string $path): string
+    {
+        $relativePath = trim($path, '/');
+        $prefix = trim((string) config('peoplecine.banner_public_prefix', 'images/managed-banners'), '/');
+
+        if ($prefix !== '' && Str::startsWith($relativePath, $prefix.'/')) {
+            $suffix = substr($relativePath, strlen($prefix) + 1);
+            $normalizedSuffix = str_replace('\\', '/', (string) $suffix);
+            [$section, $fileName] = array_pad(explode('/', $normalizedSuffix, 2), 2, null);
+
+            if (
+                is_string($section)
+                && is_string($fileName)
+                && $section !== ''
+                && $fileName !== ''
+            ) {
+                return route('managed-banners.show', [
+                    'section' => $section,
+                    'filename' => basename($fileName),
+                ]);
+            }
+        }
+
+        return asset($relativePath);
     }
 }

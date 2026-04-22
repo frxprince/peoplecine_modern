@@ -14,7 +14,7 @@ return [
     ]))),
     'article_pdf_root' => env('PEOPLECINE_ARTICLE_PDF_ROOT', public_path('legacy-article-pdf')),
     'banner_config_path' => env('PEOPLECINE_BANNER_CONFIG_PATH', storage_path('app/private/banner-manager.json')),
-    'banner_public_root' => env('PEOPLECINE_BANNER_PUBLIC_ROOT', public_path('images/managed-banners')),
+    'banner_public_root' => env('PEOPLECINE_BANNER_PUBLIC_ROOT', storage_path('app/private/managed-banners')),
     'banner_public_prefix' => env('PEOPLECINE_BANNER_PUBLIC_PREFIX', 'images/managed-banners'),
     'post_image_limit' => (int) env('PEOPLECINE_POST_IMAGE_LIMIT', 12),
     'post_image_max_kb' => (int) env('PEOPLECINE_POST_IMAGE_MAX_KB', 4096),

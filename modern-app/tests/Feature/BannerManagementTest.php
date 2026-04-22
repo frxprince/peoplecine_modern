@@ -83,15 +83,28 @@ class BannerManagementTest extends TestCase
         $this->assertSame(55, $updatedConfig['landing'][0]['sort_order']);
         $this->assertSame('Landing Banner Updated', $updatedConfig['landing'][0]['alt']);
 
+        $sidebarBannerUrl = route('managed-banners.show', [
+            'section' => 'sidebar',
+            'filename' => basename($sidebarBannerPath),
+        ]);
+
+        $landingBannerUrl = route('managed-banners.show', [
+            'section' => 'landing',
+            'filename' => basename($updatedConfig['landing'][0]['path']),
+        ]);
+
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('test-banners/sidebar/', false)
+            ->assertSee($sidebarBannerUrl, false)
             ->assertSee('Sidebar Test Banner');
 
         $this->get(route('landing'))
             ->assertOk()
-            ->assertSee('test-banners/landing/', false)
+            ->assertSee($landingBannerUrl, false)
             ->assertSee('Landing Banner Updated');
+
+        $this->get($sidebarBannerUrl)->assertOk();
+        $this->get($landingBannerUrl)->assertOk();
 
         $this->assertFileExists($this->bannerPublicRoot.DIRECTORY_SEPARATOR.'sidebar'.DIRECTORY_SEPARATOR.basename($sidebarBannerPath));
 
