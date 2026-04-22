@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Room;
+use App\Models\Topic;
+use App\Models\User;
+use App\Support\BannerManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
@@ -26,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::defaultView('vendor.pagination.legacy-bootstrap');
 
         View::composer('layouts.app', function ($view): void {
+            $bannerManager = app(BannerManager::class);
             $user = request()->user();
 
             $unreadMessageCount = 0;
@@ -62,6 +66,15 @@ class AppServiceProvider extends ServiceProvider
                 ->limit(12)
                 ->get());
             $view->with('unreadMessageCount', $unreadMessageCount);
+            $view->with('headerStats', [
+                'users' => User::query()->count(),
+                'topics' => Topic::query()->count(),
+            ]);
+            $view->with('sidebarBanners', $bannerManager->sidebarBanners());
+        });
+
+        View::composer('landing', function ($view): void {
+            $view->with('landingBanners', app(BannerManager::class)->landingBanners());
         });
     }
 }

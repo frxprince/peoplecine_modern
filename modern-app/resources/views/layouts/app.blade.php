@@ -42,9 +42,9 @@
                     </div>
                 </div>
                 <div class="legacy-header__stats">
-<strong>{{ number_format($stats['users'] ?? 0) }}</strong>
+<strong>{{ number_format($headerStats['users'] ?? 0) }}</strong>
                     <span>{{ __('members') }}</span>
-                    <strong>{{ number_format($stats['topics'] ?? 0) }}</strong>
+                    <strong>{{ number_format($headerStats['topics'] ?? 0) }}</strong>
                     <span>{{ __('topics') }}</span>
                 </div>
             </div>
@@ -76,6 +76,7 @@
                             <div class="legacy-topnav__submenu">
                                 <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
                                 <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
+                                <a href="{{ route('admin.banners.index') }}">{{ $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin' }}</a>
                             </div>
                         </details>
                     @endif
@@ -166,6 +167,7 @@
                                 <div class="legacy-menu__submenu">
                                     <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
                                     <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
+                                    <a href="{{ route('admin.banners.index') }}">{{ $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin' }}</a>
                                 </div>
                             </details>
                         @endif
@@ -204,15 +206,11 @@
                 </section>
 
                 <section class="legacy-side-banners" aria-label="PeopleCine banners">
-                    <a class="legacy-side-banner" href="{{ route('home') }}">
-                        <img src="{{ asset('images/legacy/add_newbanner_small.png') }}" alt="PeopleCine banner" loading="lazy">
-                    </a>
-                    <a class="legacy-side-banner" href="{{ route('home') }}">
-                        <img src="{{ asset('images/legacy/add_side_banner_mid.jpg') }}" alt="PeopleCine side banner" loading="lazy">
-                    </a>
-                    <a class="legacy-side-banner" href="{{ route('home') }}">
-                        <img src="{{ asset('images/legacy/bigfilm_leftbanner.png') }}" alt="Big film banner" loading="lazy">
-                    </a>
+                    @foreach (($sidebarBanners ?? []) as $banner)
+                        <div class="legacy-side-banner">
+                            <img src="{{ $banner['url'] }}" alt="{{ $banner['alt'] }}" loading="lazy">
+                        </div>
+                    @endforeach
                 </section>
 
                 @auth
@@ -233,6 +231,7 @@
                                 <div class="legacy-menu__submenu">
                                     <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
                                     <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
+                                    <a href="{{ route('admin.banners.index') }}">{{ $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin' }}</a>
                                 </div>
                             </details>
                         @endif

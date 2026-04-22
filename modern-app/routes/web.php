@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Admin\BannerManagementController;
 use App\Http\Controllers\Admin\RoomManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\ArticleController;
@@ -103,4 +104,12 @@ Route::middleware(['auth', 'password.reset.completed', 'admin'])->prefix('admin'
     Route::get('/rooms', [RoomManagementController::class, 'index'])->name('rooms.index');
     Route::post('/rooms', [RoomManagementController::class, 'store'])->name('rooms.store');
     Route::put('/rooms/{room}', [RoomManagementController::class, 'update'])->name('rooms.update');
+    Route::get('/banners', [BannerManagementController::class, 'index'])->name('banners.index');
+    Route::post('/banners', [BannerManagementController::class, 'store'])->name('banners.store');
+    Route::put('/banners/{section}/{bannerId}', [BannerManagementController::class, 'update'])
+        ->where('section', 'sidebar|landing')
+        ->name('banners.update');
+    Route::delete('/banners/{section}/{bannerId}', [BannerManagementController::class, 'destroy'])
+        ->where('section', 'sidebar|landing')
+        ->name('banners.destroy');
 });
