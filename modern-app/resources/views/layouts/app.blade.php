@@ -1,13 +1,23 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    @php($versionedAsset = static function (string $path): string {
+        $assetUrl = asset($path);
+        $fullPath = public_path($path);
+
+        if (! is_file($fullPath)) {
+            return $assetUrl;
+        }
+
+        return $assetUrl.'?v='.filemtime($fullPath);
+    })
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? __('PeopleCine Modern') }}</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/peoplecine-logo.png') }}">
-    <link rel="shortcut icon" href="{{ asset('images/peoplecine-logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/peoplecine-logo.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/peoplecine.css') }}">
+    <link rel="icon" type="image/png" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
+    <link rel="shortcut icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
+    <link rel="stylesheet" href="{{ $versionedAsset('css/peoplecine.css') }}">
 </head>
 <body>
     @php($cookieConsent = request()->cookie('peoplecine_cookie_consent'))
@@ -268,12 +278,12 @@
     <script>
         window.peoplecineTinyMceBase = @json('/vendor/tinymce');
     </script>
-    <script src="{{ asset('js/cookie-consent.js') }}" defer></script>
-    <script src="{{ asset('js/legacy-image-viewer.js') }}" defer></script>
-    <script src="{{ asset('js/legacy-composer.js') }}" defer></script>
-    <script src="{{ asset('js/staged-composer.js') }}" defer></script>
+    <script src="{{ $versionedAsset('js/cookie-consent.js') }}" defer></script>
+    <script src="{{ $versionedAsset('js/legacy-image-viewer.js') }}" defer></script>
+    <script src="{{ $versionedAsset('js/legacy-composer.js') }}" defer></script>
+    <script src="{{ $versionedAsset('js/staged-composer.js') }}" defer></script>
     @yield('pageScripts')
     <script src="/vendor/tinymce/tinymce.min.js" defer></script>
-    <script src="{{ asset('js/legacy-tinymce.js') }}" defer></script>
+    <script src="{{ $versionedAsset('js/legacy-tinymce.js') }}" defer></script>
 </body>
 </html>
