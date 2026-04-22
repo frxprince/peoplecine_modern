@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Article;
 use App\Models\ArticleBlock;
+use App\Models\Attachment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -66,5 +67,36 @@ class ArticleRenderingTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_article_page_renders_lightbox_markup_for_attached_images(): void
+    {
+        $article = Article::query()->create([
+            'title' => 'Article Attachment Viewer',
+            'slug' => 'article-attachment-viewer',
+            'view_count' => 0,
+        ]);
+
+        $block = ArticleBlock::query()->create([
+            'article_id' => $article->id,
+            'position_in_article' => 1,
+            'body_html' => '<p>Body</p>',
+        ]);
+
+        Attachment::query()->create([
+            'attachable_type' => 'article_block',
+            'attachable_id' => $block->id,
+            'slot_no' => 1,
+            'legacy_path' => 'articles/misc/Movie02s.jpg',
+            'storage_disk' => 'legacy',
+            'original_filename' => 'Movie02s.jpg',
+            'mime_type' => 'image/jpeg',
+        ]);
+
+        $response = $this->get(route('articles.show', $article));
+
+        $response->assertOk();
+        $response->assertSee('js-lightbox-item', false);
+        $response->assertSee('data-lightbox-group="article-block-'.$block->id.'"', false);
     }
 }

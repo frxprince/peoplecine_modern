@@ -5,7 +5,12 @@
 
     <section class="panel panel--hero">
         <p class="eyebrow">{{ __('Forum Room') }}</p>
-        <h1>{!! $room->coloredLocalizedNameHtml() !!}</h1>
+        <h1>
+            {!! $room->coloredLocalizedNameHtml() !!}
+            @if ($room->hasRecentActivity())
+                @include('partials.new-indicator')
+            @endif
+        </h1>
         @if ($room->description)
             <div class="lede legacy-room-description">{!! $room->legacyDescriptionHtml() !!}</div>
         @endif

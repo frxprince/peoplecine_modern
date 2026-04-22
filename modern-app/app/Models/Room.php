@@ -91,6 +91,19 @@ class Room extends Model
         return trim((string) $this->name);
     }
 
+    public function hasRecentActivity(): bool
+    {
+        if ($this->relationLoaded('latestTopic')) {
+            return $this->latestTopic?->isNewlyPosted() ?? false;
+        }
+
+        $threshold = now()->subDays((int) config('peoplecine.new_post_days', 3));
+
+        return $this->topics()
+            ->where('last_posted_at', '>=', $threshold)
+            ->exists();
+    }
+
     public function coloredLocalizedNameHtml(?string $locale = null): HtmlString
     {
         $name = e($this->localizedName($locale));

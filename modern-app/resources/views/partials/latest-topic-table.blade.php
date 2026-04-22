@@ -18,6 +18,9 @@
                                 @include('partials.camera-indicator')
                             @endif
                             {{ $topic->title }}
+                            @if ($topic->isNewlyPosted())
+                                @include('partials.new-indicator')
+                            @endif
                         </a>
                         <div class="forum-topic-meta">
                             @include('partials.author-badge', [
@@ -30,6 +33,9 @@
                         @if ($topic->room)
                             <a class="forum-room-link" href="{{ route('rooms.show', $topic->room) }}">
                                 {!! $topic->room->coloredLocalizedNameHtml() !!}
+                                @if ($topic->room->hasRecentActivity())
+                                    @include('partials.new-indicator')
+                                @endif
                             </a>
                         @else
                             <span class="empty-state">{{ __('Archive') }}</span>

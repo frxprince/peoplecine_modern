@@ -23,6 +23,9 @@
                                 @include('partials.camera-indicator')
                             @endif
                             {{ $topic->title }}
+                            @if ($topic->isNewlyPosted())
+                                @include('partials.new-indicator')
+                            @endif
                         </a>
                         <div class="forum-topic-meta">
                             @include('partials.author-badge', [

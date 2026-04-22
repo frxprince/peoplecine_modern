@@ -155,6 +155,36 @@ class PostingFlowsTest extends TestCase
         ]);
     }
 
+    public function test_topic_page_renders_lightbox_markup_for_posted_images(): void
+    {
+        $root = storage_path('app/private/test-topic-lightbox');
+        File::ensureDirectoryExists($root.DIRECTORY_SEPARATOR.'picpost'.DIRECTORY_SEPARATOR.'2026'.DIRECTORY_SEPARATOR.'04');
+        config()->set('peoplecine.legacy_wboard_root', $root);
+
+        $topic = $this->createTopic();
+        $post = $topic->posts()->firstOrFail();
+        $relativePath = 'picpost/2026/04/lightbox-image.JPG';
+        File::put($root.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath), base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9p2nK2wAAAAASUVORK5CYII='));
+
+        Attachment::query()->create([
+            'attachable_type' => 'post',
+            'attachable_id' => $post->id,
+            'slot_no' => 1,
+            'legacy_path' => $relativePath,
+            'storage_disk' => 'legacy',
+            'original_filename' => 'lightbox-image.JPG',
+            'mime_type' => 'image/jpeg',
+        ]);
+
+        $response = $this->get(route('topics.show', $topic));
+
+        $response->assertOk();
+        $response->assertSee('js-lightbox-item', false);
+        $response->assertSee('data-lightbox-group="post-'.$post->id.'"', false);
+        $response->assertSee('legacy-image-viewer.js', false);
+        $response->assertSee('data-image-viewer', false);
+    }
+
     public function test_reply_without_text_or_images_is_still_rejected(): void
     {
         $user = $this->createMember('blank-reply-user', 3);

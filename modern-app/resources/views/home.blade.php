@@ -44,7 +44,12 @@
                     @forelse ($rooms as $room)
                         <tr>
                             <td>
-                                <a class="forum-room-link" href="{{ route('rooms.show', $room) }}">{!! $room->coloredLocalizedNameHtml() !!}</a>
+                                <a class="forum-room-link" href="{{ route('rooms.show', $room) }}">
+                                    {!! $room->coloredLocalizedNameHtml() !!}
+                                    @if ($room->hasRecentActivity())
+                                        @include('partials.new-indicator')
+                                    @endif
+                                </a>
                                 @if ($room->description)
                                     <div class="forum-room-description">{!! $room->legacyDescriptionHtml() !!}</div>
                                 @endif
@@ -59,6 +64,9 @@
                                             @include('partials.camera-indicator')
                                         @endif
                                         {{ \Illuminate\Support\Str::limit($room->latestTopic->title, 62) }}
+                                        @if ($room->latestTopic->isNewlyPosted())
+                                            @include('partials.new-indicator')
+                                        @endif
                                     </a>
                                     <div class="forum-last-meta">
                                         @include('partials.author-badge', [

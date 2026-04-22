@@ -161,12 +161,18 @@
                                         @include('partials.camera-indicator')
                                     @endif
                                     {{ $topic->title }}
+                                    @if ($topic->isNewlyPosted())
+                                        @include('partials.new-indicator')
+                                    @endif
                                 </a>
                             </td>
                             <td>
                                 @if ($topic->room)
                                     <a class="forum-room-link" href="{{ route('rooms.show', $topic->room) }}">
                                         {!! $topic->room->coloredLocalizedNameHtml() !!}
+                                        @if ($topic->room->hasRecentActivity())
+                                            @include('partials.new-indicator')
+                                        @endif
                                     </a>
                                 @else
                                     <span class="empty-state">{{ __('Archived room') }}</span>

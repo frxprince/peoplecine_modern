@@ -20,6 +20,7 @@ return [
     'post_image_base_directory' => env('PEOPLECINE_POST_IMAGE_BASE_DIRECTORY', 'picpost'),
     'post_image_directory_pattern' => env('PEOPLECINE_POST_IMAGE_DIRECTORY_PATTERN', 'Y/m'),
     'post_image_resize_quality' => (float) env('PEOPLECINE_POST_IMAGE_RESIZE_QUALITY', 0.9),
+    'new_post_days' => (int) env('PEOPLECINE_NEW_POST_DAYS', 3),
     'forum_search_cooldown_seconds' => (int) env('PEOPLECINE_FORUM_SEARCH_COOLDOWN_SECONDS', 6),
     'forum_search_burst_limit' => (int) env('PEOPLECINE_FORUM_SEARCH_BURST_LIMIT', 8),
     'watermark_site_name' => env('PEOPLECINE_WATERMARK_SITE_NAME', 'www.peoplecine.com'),

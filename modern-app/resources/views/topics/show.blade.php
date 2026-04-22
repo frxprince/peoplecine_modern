@@ -234,7 +234,12 @@
                     <div class="attachment-grid">
                         @foreach ($post->attachments as $attachment)
                             @if ($attachment->isImage() && $attachment->legacyUrl())
-                                <a class="attachment-card attachment-card--image" href="{{ $attachment->legacyUrl() }}" target="_blank" rel="noopener noreferrer">
+                                <a
+                                    class="attachment-card attachment-card--image js-lightbox-item"
+                                    href="{{ $attachment->legacyUrl() }}"
+                                    data-lightbox-group="post-{{ $post->id }}"
+                                    data-lightbox-caption="{{ $attachment->original_filename ?: __('Posted image') }}"
+                                >
                                     <img
                                         class="attachment-card__image"
                                         src="{{ $attachment->legacyUrl() }}"

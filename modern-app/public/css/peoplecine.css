@@ -728,6 +728,29 @@ a { color: inherit; text-decoration: none; }
 .forum-topic-link {
     display: inline-block;
 }
+.forum-new-indicator {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.08rem 0.36rem;
+    border: 1px solid #bb1f1f;
+    background: linear-gradient(180deg, #ff6c6c 0%, #d41f1f 100%);
+    color: #fff8b9;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0.08em;
+    vertical-align: middle;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+    animation: forum-new-indicator-blink 1.05s steps(2, start) infinite;
+}
+@keyframes forum-new-indicator-blink {
+    0%, 55% {
+        opacity: 1;
+    }
+    56%, 100% {
+        opacity: 0.2;
+    }
+}
 .forum-topic-meta {
     margin-top: 0.28rem;
     color: var(--muted);
@@ -1197,6 +1220,85 @@ h2 { font-size: 1.5rem; }
     object-fit: contain;
     background: #fff;
     border: 1px solid #d4deee;
+}
+.image-viewer-open {
+    overflow: hidden;
+}
+.image-viewer[hidden] {
+    display: none;
+}
+.image-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+}
+.image-viewer__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 16, 26, 0.82);
+}
+.image-viewer__dialog {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: min(94vw, 1200px);
+    height: min(90vh, 900px);
+    margin: min(5vh, 2rem) auto;
+    padding: 1rem 1.25rem;
+}
+.image-viewer__figure {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 0.75rem;
+    min-width: 0;
+    min-height: 0;
+}
+.image-viewer__image {
+    display: block;
+    max-width: 100%;
+    max-height: calc(90vh - 6rem);
+    width: auto;
+    height: auto;
+    border: 1px solid rgba(255,255,255,0.32);
+    background: #101722;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.38);
+}
+.image-viewer__caption {
+    color: #f3f5f9;
+    text-align: center;
+    line-height: 1.45;
+    word-break: break-word;
+}
+.image-viewer__close,
+.image-viewer__nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid rgba(255,255,255,0.42);
+    border-radius: 999px;
+    background: rgba(16, 24, 36, 0.82);
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+.image-viewer__close {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.5rem;
+}
+.image-viewer__nav[hidden] {
+    visibility: hidden;
+}
+.image-viewer__close:hover,
+.image-viewer__nav:hover {
+    background: rgba(36, 58, 90, 0.92);
 }
 .attachment-card__name {
     display: block;
@@ -2285,6 +2387,32 @@ h2 { font-size: 1.5rem; }
 }
 
 @media (max-width: 720px) {
+    .image-viewer__dialog {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        width: min(96vw, 1200px);
+        height: min(92vh, 900px);
+        padding: 2.6rem 0.55rem 0.9rem;
+    }
+
+    .image-viewer__nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .image-viewer__nav--prev {
+        left: 0.35rem;
+    }
+
+    .image-viewer__nav--next {
+        right: 0.35rem;
+    }
+
+    .image-viewer__image {
+        max-height: calc(92vh - 7rem);
+    }
+
     .legacy-calculator .form-group,
     .legacy-calculator .row {
         align-items: flex-start;

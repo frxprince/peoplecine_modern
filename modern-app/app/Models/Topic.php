@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 class Topic extends Model
 {
@@ -65,6 +66,14 @@ class Topic extends Model
         }
 
         return $this->postsWithImages()->exists();
+    }
+
+    public function isNewlyPosted(): bool
+    {
+        $threshold = now()->subDays((int) config('peoplecine.new_post_days', 3));
+        $activityAt = $this->last_posted_at ?? $this->created_at;
+
+        return $activityAt instanceof Carbon && $activityAt->greaterThanOrEqualTo($threshold);
     }
 
     public function scopeVisibleTo(Builder $query, ?User $user): Builder

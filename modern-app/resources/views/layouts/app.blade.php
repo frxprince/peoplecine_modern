@@ -264,10 +264,12 @@
             </div>
         </section>
     @endif
+    @include('partials.image-viewer-modal')
     <script>
         window.peoplecineTinyMceBase = @json('/vendor/tinymce');
     </script>
     <script src="{{ asset('js/cookie-consent.js') }}" defer></script>
+    <script src="{{ asset('js/legacy-image-viewer.js') }}" defer></script>
     <script src="{{ asset('js/legacy-composer.js') }}" defer></script>
     <script src="{{ asset('js/staged-composer.js') }}" defer></script>
     @yield('pageScripts')
