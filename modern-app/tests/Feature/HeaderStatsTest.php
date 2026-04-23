@@ -56,4 +56,16 @@ class HeaderStatsTest extends TestCase
         $response->assertSee('>2</strong>', false);
         $response->assertSee('>1</strong>', false);
     }
+
+    public function test_layout_includes_click_counter_and_build_datetime(): void
+    {
+        config(['app.locale' => 'en']);
+        app()->setLocale('en');
+
+        $response = $this->get(route('home'));
+
+        $response->assertOk();
+        $response->assertSee('Click counter');
+        $response->assertSee('Build datetime');
+    }
 }

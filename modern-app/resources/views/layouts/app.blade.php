@@ -28,6 +28,8 @@
     @php($goBackLabel = $currentLocale === 'th' ? 'ย้อนกลับ' : 'Go Back')
     @php($memberCountLabel = $currentLocale === 'th' ? 'สมาชิก' : 'members')
     @php($topicCountLabel = $currentLocale === 'th' ? 'หัวข้อ' : 'topics')
+    @php($clickCounterLabel = $currentLocale === 'th' ? 'จำนวนการเข้าชม' : 'Click counter')
+    @php($buildDatetimeLabel = $currentLocale === 'th' ? 'วันเวลาบิลด์' : 'Build datetime')
     <div class="legacy-shell">
         <header class="legacy-header">
             <div class="legacy-header__banner">
@@ -217,6 +219,13 @@
                         </div>
                     @endforeach
                 </section>
+
+                <div class="legacy-sidebar__footer">
+                    <div class="legacy-sidebar__footer-item">
+                        <strong>{{ $buildDatetimeLabel }}</strong>
+                        <span>{{ $siteFooterStats['build_datetime'] ?? '-' }}</span>
+                    </div>
+                </div>
             </aside>
 
             <main class="legacy-content">
@@ -235,6 +244,10 @@
                 >
                     {{ $goBackLabel }}
                 </button>
+                <div class="page-footer-nav__meta">
+                    <strong>{{ $clickCounterLabel }}</strong>
+                    <span>{{ number_format((int) ($siteFooterStats['clicks'] ?? 0)) }}</span>
+                </div>
             </div>
             </main>
         </div>

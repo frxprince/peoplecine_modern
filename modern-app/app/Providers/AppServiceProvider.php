@@ -6,6 +6,8 @@ use App\Models\Room;
 use App\Models\Topic;
 use App\Models\User;
 use App\Support\BannerManager;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
@@ -31,6 +33,15 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.app', function ($view): void {
             $bannerManager = app(BannerManager::class);
             $user = request()->user();
+            $buildTimestamp = collect([
+                base_path('composer.lock'),
+                base_path('routes/web.php'),
+                resource_path('views/layouts/app.blade.php'),
+                public_path('css/peoplecine.css'),
+            ])
+                ->filter(static fn (string $path): bool => is_file($path))
+                ->map(static fn (string $path): int => (int) filemtime($path))
+                ->max() ?: time();
 
             $unreadMessageCount = 0;
 
@@ -59,6 +70,9 @@ class AppServiceProvider extends ServiceProvider
                     ->count();
             }
 
+            Cache::add('peoplecine.site_click_counter', 0, now()->addYears(10));
+            $clickCounter = (int) Cache::increment('peoplecine.site_click_counter');
+
             $view->with('sidebarRooms', Room::query()
                 ->visibleTo($user)
                 ->orderBy('sort_order')
@@ -69,6 +83,13 @@ class AppServiceProvider extends ServiceProvider
             $view->with('headerStats', [
                 'users' => User::query()->count(),
                 'topics' => Topic::query()->count(),
+            ]);
+            $view->with('siteFooterStats', [
+                'clicks' => $clickCounter,
+                'build_datetime' => CarbonImmutable::createFromTimestamp(
+                    $buildTimestamp,
+                    config('app.timezone', 'UTC')
+                )->format('Y-m-d H:i:s'),
             ]);
             $view->with('sidebarBanners', $bannerManager->sidebarBanners());
         });
