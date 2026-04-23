@@ -50,10 +50,12 @@ class DashboardController extends Controller
             });
 
         return view('dashboard', [
-            'title' => 'Member Dashboard',
+            'title' => $this->label('แดชบอร์ดสมาชิก', 'Member Dashboard'),
             'user' => $user,
             'stats' => [
-                'profile_status' => $user->requiresPasswordReset() ? 'Needs password update' : 'Active',
+                'profile_status' => $user->requiresPasswordReset()
+                    ? $this->label('ต้องเปลี่ยนรหัสผ่าน', 'Needs password update')
+                    : $this->label('ใช้งานอยู่', 'Active'),
                 'member_level' => $user->memberLevelLabel(),
                 'can_reply' => $user->canReply(),
                 'can_create_topic' => $user->canCreateTopic(),
@@ -78,5 +80,10 @@ class DashboardController extends Controller
             'bookmarkedTopics' => $bookmarkedTopics,
             'recentConversations' => $recentConversations,
         ]);
+    }
+
+    private function label(string $thai, string $english): string
+    {
+        return app()->getLocale() === 'th' ? $thai : $english;
     }
 }

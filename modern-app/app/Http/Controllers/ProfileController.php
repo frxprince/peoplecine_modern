@@ -17,7 +17,10 @@ class ProfileController extends Controller
         abort_unless($request->user()?->canViewMemberProfiles(), 403);
 
         return view('profile.show', [
-            'title' => $user->displayName().' Profile',
+            'title' => $this->label(
+                $user->displayName().' โปรไฟล์',
+                $user->displayName().' Profile'
+            ),
             'profileUser' => $user->load('profile')->loadCount(['topics', 'posts']),
         ]);
     }
@@ -25,7 +28,7 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         return view('profile.edit', [
-            'title' => 'Profile Settings',
+            'title' => $this->label('ตั้งค่าโปรไฟล์', 'Profile Settings'),
             'user' => $request->user()->load('profile'),
         ]);
     }
@@ -81,7 +84,12 @@ class ProfileController extends Controller
 
         return redirect()
             ->route('profile.edit')
-            ->with('status', 'Your profile has been updated.');
+            ->with('status', $this->label('อัปเดตโปรไฟล์เรียบร้อยแล้ว', 'Your profile has been updated.'));
+    }
+
+    private function label(string $thai, string $english): string
+    {
+        return app()->getLocale() === 'th' ? $thai : $english;
     }
 
     private function storeUploadedAvatar(UploadedFile $avatar, int $userId, ?string $existingPath): string

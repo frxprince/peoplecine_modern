@@ -22,7 +22,7 @@ class UserManagementController extends Controller
 {
     public function index(Request $request): View
     {
-        $sort = (string) $request->query('sort', 'role');
+        $sort = (string) $request->query('sort', 'id');
         $direction = strtolower((string) $request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
         $search = trim((string) $request->query('search', ''));
 
@@ -51,7 +51,7 @@ class UserManagementController extends Controller
         ];
 
         if (! array_key_exists($sort, $sortableColumns)) {
-            $sort = 'role';
+            $sort = 'id';
         }
 
         $usersQuery = User::query()->with('profile');
@@ -256,7 +256,7 @@ class UserManagementController extends Controller
     {
         $query = [
             'page' => $request->integer('page', 1),
-            'sort' => (string) $request->query('sort', 'role'),
+            'sort' => (string) $request->query('sort', 'id'),
             'direction' => (string) $request->query('direction', 'desc'),
         ];
 

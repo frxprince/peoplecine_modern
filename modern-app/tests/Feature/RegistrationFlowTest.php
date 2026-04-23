@@ -16,10 +16,11 @@ class RegistrationFlowTest extends TestCase
         $response = $this->get(route('register'));
 
         $response->assertOk();
-        $response->assertSee(__('Create a new PeopleCine account.'));
-        $response->assertSee(__('Address'));
-        $response->assertSee(__('Postcode'));
-        $response->assertSee(__('Human Check'), false);
+        $response->assertSee('สร้างบัญชี PeopleCine ใหม่');
+        $response->assertSee('ที่อยู่');
+        $response->assertSee('รหัสไปรษณีย์');
+        $response->assertSee('ตรวจสอบความปลอดภัย');
+        $response->assertSee(route('register.captcha', ['token' => session('registration.captcha_token')]), false);
     }
 
     public function test_guest_can_register_new_member_account(): void
@@ -38,7 +39,7 @@ class RegistrationFlowTest extends TestCase
             'postcode' => '10200',
             'address' => '123 Cinema Road',
             'website' => '',
-            'human_check' => session('registration.challenge_answer'),
+            'captcha' => session('registration.captcha_answer'),
         ]);
 
         $response->assertRedirect(route('dashboard'));
@@ -66,7 +67,7 @@ class RegistrationFlowTest extends TestCase
             'password' => 'SecretPass123!',
             'password_confirmation' => 'SecretPass123!',
             'website' => 'https://bot.example',
-            'human_check' => session('registration.challenge_answer'),
+            'captcha' => session('registration.captcha_answer'),
         ]);
 
         $response->assertRedirect(route('register'));
@@ -76,7 +77,7 @@ class RegistrationFlowTest extends TestCase
         ]);
     }
 
-    public function test_registration_rejects_fast_or_wrong_human_check_submission(): void
+    public function test_registration_rejects_fast_or_wrong_captcha_submission(): void
     {
         $this->get(route('register'));
         session()->put('registration.started_at', now()->timestamp);
@@ -88,11 +89,11 @@ class RegistrationFlowTest extends TestCase
             'password' => 'SecretPass123!',
             'password_confirmation' => 'SecretPass123!',
             'website' => '',
-            'human_check' => session('registration.challenge_answer'),
+            'captcha' => session('registration.captcha_answer'),
         ]);
 
         $fastResponse->assertRedirect(route('register'));
-        $fastResponse->assertSessionHasErrors('human_check');
+        $fastResponse->assertSessionHasErrors('captcha');
 
         $this->get(route('register'));
         session()->put('registration.started_at', now()->subSeconds(10)->timestamp);
@@ -104,10 +105,23 @@ class RegistrationFlowTest extends TestCase
             'password' => 'SecretPass123!',
             'password_confirmation' => 'SecretPass123!',
             'website' => '',
-            'human_check' => 999,
+            'captcha' => 'ZZZZZZ',
         ]);
 
         $wrongResponse->assertRedirect(route('register'));
-        $wrongResponse->assertSessionHasErrors('human_check');
+        $wrongResponse->assertSessionHasErrors('captcha');
+    }
+
+    public function test_registration_captcha_route_renders_svg_for_current_session_token(): void
+    {
+        $this->get(route('register'));
+
+        $response = $this->get(route('register.captcha', [
+            'token' => session('registration.captcha_token'),
+        ]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
+        $response->assertSee('<svg', false);
     }
 }

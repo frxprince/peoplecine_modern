@@ -172,7 +172,7 @@ class AuthFlowsTest extends TestCase
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Welcome back, Active Member.');
+        $response->assertSee('ยินดีต้อนรับกลับ, Active Member.');
         $response->assertSee('A migrated topic');
     }
 

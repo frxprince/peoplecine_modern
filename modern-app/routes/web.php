@@ -60,6 +60,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
     Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.store');
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::get('/register/captcha', [RegisteredUserController::class, 'captcha'])->name('register.captcha');
     Route::post('/register', [RegisteredUserController::class, 'store'])->name('register.store');
 });
 

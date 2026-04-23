@@ -24,6 +24,10 @@
     @php($currentLocale = app()->getLocale())
     @php($changePasswordLabel = $currentLocale === 'th' ? 'เปลี่ยนรหัสผ่าน' : 'Change Password')
     @php($projectorManualLabel = $currentLocale === 'th' ? 'คู่มือโปรเจคเตอร์' : 'Projector manual')
+    @php($bannerAdminLabel = $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin')
+    @php($goBackLabel = $currentLocale === 'th' ? 'ย้อนกลับ' : 'Go Back')
+    @php($memberCountLabel = $currentLocale === 'th' ? 'สมาชิก' : 'members')
+    @php($topicCountLabel = $currentLocale === 'th' ? 'หัวข้อ' : 'topics')
     <div class="legacy-shell">
         <header class="legacy-header">
             <div class="legacy-header__banner">
@@ -39,14 +43,14 @@
                     <div>
                         <p class="legacy-header__tag">peoplecine.com</p>
                         <h1>{{ __('PeopleCine Main Forum') }}</h1>
-                    <p class="legacy-header__subtitle">{{ __('Open-air cinema community') }}</p>
+                        <p class="legacy-header__subtitle">{{ __('Open-air cinema community') }}</p>
                     </div>
                 </div>
                 <div class="legacy-header__stats">
-<strong>{{ number_format($headerStats['users'] ?? 0) }}</strong>
-                    <span>{{ __('members') }}</span>
+                    <strong>{{ number_format($headerStats['users'] ?? 0) }}</strong>
+                    <span>{{ $memberCountLabel }}</span>
                     <strong>{{ number_format($headerStats['topics'] ?? 0) }}</strong>
-                    <span>{{ __('topics') }}</span>
+                    <span>{{ $topicCountLabel }}</span>
                 </div>
             </div>
 
@@ -77,7 +81,7 @@
                             <div class="legacy-topnav__submenu">
                                 <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
                                 <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
-                                <a href="{{ route('admin.banners.index') }}">{{ $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin' }}</a>
+                                <a href="{{ route('admin.banners.index') }}">{{ $bannerAdminLabel }}</a>
                             </div>
                         </details>
                     @endif
@@ -168,7 +172,7 @@
                                 <div class="legacy-menu__submenu">
                                     <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
                                     <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
-                                    <a href="{{ route('admin.banners.index') }}">{{ $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin' }}</a>
+                                    <a href="{{ route('admin.banners.index') }}">{{ $bannerAdminLabel }}</a>
                                 </div>
                             </details>
                         @endif
@@ -213,31 +217,6 @@
                         </div>
                     @endforeach
                 </section>
-
-                @auth
-                    <section class="legacy-menu">
-                        <h2>{{ __('Personal Menu') }}</h2>
-                        <a href="{{ route('messages.index') }}">
-                            {{ __('Inbox') }}
-                            @if (($unreadMessageCount ?? 0) > 0)
-                                <span class="sidebar-notify-badge">{{ $unreadMessageCount }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('messages.create') }}">{{ __('Write Message') }}</a>
-                        <a href="{{ route('profile.edit') }}">{{ __('Edit Profile') }}</a>
-                        <a href="{{ route('password.edit') }}">{{ $changePasswordLabel }}</a>
-                        @if (auth()->user()?->isAdmin())
-                            <details class="legacy-menu__group">
-                                <summary>{{ __('Admin') }}</summary>
-                                <div class="legacy-menu__submenu">
-                                    <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
-                                    <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
-                                    <a href="{{ route('admin.banners.index') }}">{{ $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin' }}</a>
-                                </div>
-                            </details>
-                        @endif
-                    </section>
-                @endauth
             </aside>
 
             <main class="legacy-content">
@@ -254,7 +233,7 @@
                     type="button"
                     onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = @js(route('home')); }"
                 >
-                    {{ app()->getLocale() === 'th' ? 'ย้อนกลับ' : __('Go Back') }}
+                    {{ $goBackLabel }}
                 </button>
             </div>
             </main>

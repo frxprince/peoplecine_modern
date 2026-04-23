@@ -2,31 +2,13 @@
 
 @php($projectorManualLabel = app()->getLocale() === 'th' ? 'คู่มือโปรเจคเตอร์' : 'Projector manual')
 
+@php($latestUpdateLabel = app()->getLocale() === 'th' ? 'อัปเดตล่าสุด' : 'Latest update')
+@php($latestUpdateDescription = app()->getLocale() === 'th' ? 'ความเคลื่อนไหวล่าสุดจากหัวข้อในเว็บบอร์ด' : 'Latest activity from the forum topics.')
+
 @section('content')
-    <section class="forum-intro">
-        <div class="forum-intro__main">
-            <h2>{{ __('Open-air cinema community') }}</h2>
-            <p>
-                {{ __('The new homepage starts from the main forum rooms, keeps the imported archive data, and stays close to the spirit of the old PeopleCine board.') }}
-            </p>
-        </div>
-
-        <div class="forum-intro__links">
-            @auth
-                <a class="legacy-link-button" href="{{ route('dashboard') }}">{{ __('Open Member Dashboard') }}</a>
-            @else
-                <a class="legacy-link-button" href="{{ route('login') }}">{{ __('Member Login') }}</a>
-            @endauth
-            <a class="legacy-link-button legacy-link-button--secondary" href="{{ route('projector-manual.index') }}">{{ $projectorManualLabel }}</a>
-        </div>
-    </section>
-
     <section class="legacy-panel">
         <div class="legacy-panel__header">
             <h2>{{ __('Open-air cinema community') }}</h2>
-            <p>
-                {{ __('The new homepage starts from the main forum rooms, keeps the imported archive data, and stays close to the spirit of the old PeopleCine board.') }}
-            </p>
         </div>
 
         <div class="forum-table-wrap">
@@ -93,10 +75,8 @@
 
     <section class="legacy-panel">
         <div class="legacy-panel__header">
-            <h2>{{ __('Open-air cinema community') }}</h2>
-            <p>
-                {{ __('The new homepage starts from the main forum rooms, keeps the imported archive data, and stays close to the spirit of the old PeopleCine board.') }}
-            </p>
+            <h2>{{ $latestUpdateLabel }}</h2>
+            <p>{{ $latestUpdateDescription }}</p>
         </div>
 
         @include('partials.latest-topic-table', ['topics' => $latestTopics])

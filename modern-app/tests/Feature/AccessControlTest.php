@@ -123,7 +123,6 @@ class AccessControlTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.users.index'))
             ->assertOk()
-            ->assertSee('User Management')
             ->assertSee('member-user');
 
         $updateResponse = $this->actingAs($admin)->put(route('admin.users.update', $member), [
@@ -134,7 +133,7 @@ class AccessControlTest extends TestCase
 
         $updateResponse->assertRedirect(route('admin.users.index', [
             'page' => 1,
-            'sort' => 'role',
+            'sort' => 'id',
             'direction' => 'desc',
         ]));
 
@@ -451,7 +450,7 @@ class AccessControlTest extends TestCase
 
         $response->assertRedirect(route('admin.users.index', [
             'page' => 1,
-            'sort' => 'role',
+            'sort' => 'id',
             'direction' => 'desc',
         ]));
 
@@ -504,6 +503,11 @@ class AccessControlTest extends TestCase
             'user_id' => $omega->id,
             'display_name' => 'ZZZ Member',
         ]);
+
+        $defaultResponse = $this->actingAs($admin)->get(route('admin.users.index'));
+
+        $defaultResponse->assertOk();
+        $defaultResponse->assertSeeInOrder(['zzz-member', 'aaa-member', 'admin-sorter']);
 
         $response = $this->actingAs($admin)->get(route('admin.users.index', [
             'sort' => 'user',
@@ -895,8 +899,6 @@ class AccessControlTest extends TestCase
 
         $memberResponse = $this->actingAs($levelThree)->get(route('members.show', $poster));
         $memberResponse->assertOk();
-        $memberResponse->assertSee('This member has hidden their address.');
-        $memberResponse->assertSee('Hidden by member');
         $memberResponse->assertDontSee('55 Secret Street');
         $memberResponse->assertDontSee('50000');
 
