@@ -66,14 +66,15 @@ class Room extends Model
     public function coloredNameHtml(): HtmlString
     {
         $name = e($this->name);
+        $badge = $this->accessLevelBadgeHtml()->toHtml();
 
         if ($this->name_color === null) {
-            return new HtmlString($name);
+            return new HtmlString($badge.$name);
         }
 
         $color = e((string) $this->name_color);
 
-        return new HtmlString('<span style="color: '.$color.'">'.$name.'</span>');
+        return new HtmlString($badge.'<span style="color: '.$color.'">'.$name.'</span>');
     }
 
     public function localizedName(?string $locale = null): string
@@ -107,14 +108,47 @@ class Room extends Model
     public function coloredLocalizedNameHtml(?string $locale = null): HtmlString
     {
         $name = e($this->localizedName($locale));
+        $badge = $this->accessLevelBadgeHtml($locale)->toHtml();
 
         if ($this->name_color === null) {
-            return new HtmlString($name);
+            return new HtmlString($badge.$name);
         }
 
         $color = e((string) $this->name_color);
 
-        return new HtmlString('<span style="color: '.$color.'">'.$name.'</span>');
+        return new HtmlString($badge.'<span style="color: '.$color.'">'.$name.'</span>');
+    }
+
+    public function accessLevelBadgeHtml(?string $locale = null): HtmlString
+    {
+        $level = max(0, (int) $this->access_level);
+
+        if ($level <= 3) {
+            return new HtmlString('');
+        }
+
+        $title = e($this->accessLevelLabel($locale));
+
+        return new HtmlString(
+            '<span class="room-access-badge" title="'.$title.'" aria-label="'.$title.'">LV-'.$level.'</span> '
+        );
+    }
+
+    public function accessLevelLabel(?string $locale = null): string
+    {
+        $locale = $locale ?? app()->getLocale();
+
+        return match ((int) $this->access_level) {
+            0 => $locale === 'th' ? 'ระดับ 0 อ่านได้ทุกคน' : 'Level 0 read access for everyone',
+            1 => $locale === 'th' ? 'ระดับ 1 ตอบได้หลังสมัคร 1 เดือน' : 'Level 1 reply after 1 month',
+            2 => $locale === 'th' ? 'ระดับ 2 ตอบได้หลังสมัคร 3 เดือน' : 'Level 2 reply after 3 months',
+            3 => $locale === 'th' ? 'ระดับ 3 ตั้งหัวข้อได้เต็มรูปแบบ' : 'Level 3 full posting access',
+            4 => $locale === 'th' ? 'ระดับ 4 ห้อง VIP' : 'Level 4 VIP access',
+            9 => $locale === 'th' ? 'ระดับ 9 เฉพาะผู้ดูแลระบบ' : 'Level 9 admin only',
+            default => $locale === 'th'
+                ? 'ระดับ '.(int) $this->access_level
+                : 'Level '.(int) $this->access_level,
+        };
     }
 
     public function legacyDescriptionHtml(): string

@@ -771,6 +771,23 @@ a { color: inherit; text-decoration: none; }
 .forum-room-link span {
     color: inherit;
 }
+.room-access-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.45rem;
+    padding: 0.05rem 0.32rem;
+    margin-right: 0.32rem;
+    border: 1px solid #174b95;
+    border-radius: 999px;
+    background: transparent;
+    color: #174b95;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.15;
+    vertical-align: middle;
+    white-space: nowrap;
+}
 .forum-topic-link {
     display: inline-block;
 }
