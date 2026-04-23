@@ -143,7 +143,7 @@ class AccessControlTest extends TestCase
         $this->assertTrue($member->isAdmin());
     }
 
-    public function test_admin_user_table_shows_address_and_phone_columns(): void
+    public function test_admin_user_table_shows_address_phone_and_click_columns(): void
     {
         $admin = User::query()->create([
             'username' => 'admin-contact',
@@ -166,6 +166,7 @@ class AccessControlTest extends TestCase
             'role' => 'user',
             'account_status' => 'active',
             'legacy_level' => 1,
+            'visit_count' => 321,
         ]);
         UserProfile::query()->create([
             'user_id' => $member->id,
@@ -177,10 +178,12 @@ class AccessControlTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.users.index'))
             ->assertOk()
-            ->assertSee('Address')
-            ->assertSee('Phone')
+            ->assertSee('ที่อยู่')
+            ->assertSee('โทรศัพท์')
+            ->assertSee('Clicks')
             ->assertSee('123 Archive Road 10200')
-            ->assertSee('0812345678');
+            ->assertSee('0812345678')
+            ->assertSee('321');
     }
 
     public function test_admin_can_set_user_password_from_admin_table(): void
@@ -330,7 +333,7 @@ class AccessControlTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.rooms.index'))
             ->assertOk()
-            ->assertSee('Room Management')
+            ->assertSee('จัดการห้องเว็บบอร์ด')
             ->assertSee('Admin Room Config');
 
         $response = $this->actingAs($admin)->put(route('admin.rooms.update', $room), [
@@ -485,6 +488,7 @@ class AccessControlTest extends TestCase
             'role' => 'user',
             'account_status' => 'active',
             'legacy_level' => 0,
+            'visit_count' => 10,
         ]);
         UserProfile::query()->create([
             'user_id' => $alpha->id,
@@ -498,6 +502,7 @@ class AccessControlTest extends TestCase
             'role' => 'user',
             'account_status' => 'active',
             'legacy_level' => 4,
+            'visit_count' => 500,
         ]);
         UserProfile::query()->create([
             'user_id' => $omega->id,
@@ -532,6 +537,14 @@ class AccessControlTest extends TestCase
 
         $idResponse->assertOk();
         $idResponse->assertSeeInOrder(['zzz-member', 'aaa-member', 'admin-sorter']);
+
+        $visitResponse = $this->actingAs($admin)->get(route('admin.users.index', [
+            'sort' => 'visit_count',
+            'direction' => 'desc',
+        ]));
+
+        $visitResponse->assertOk();
+        $visitResponse->assertSeeInOrder(['zzz-member', 'aaa-member']);
     }
 
     public function test_admin_user_management_can_search_users(): void
@@ -584,7 +597,8 @@ class AccessControlTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('cinemafan');
-        $response->assertDontSee('projector');
+        $response->assertDontSee('projector@example.com');
+        $response->assertDontSee('Projector User');
     }
 
     public function test_vip_topics_are_hidden_from_home_when_user_lacks_access(): void

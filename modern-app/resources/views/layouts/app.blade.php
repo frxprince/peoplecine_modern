@@ -141,6 +141,10 @@
                                     {{ __('Level') }}: {{ auth()->user()->memberLevel() }}
                                 </span>
                                 <span class="legacy-member-card__meta">
+                                    {{ app()->getLocale() === 'th' ? 'จำนวนคลิก' : 'Clicks' }}:
+                                    {{ number_format((int) (auth()->user()->visit_count ?? 0)) }}
+                                </span>
+                                <span class="legacy-member-card__meta">
                                     {{ auth()->user()->memberLevelLabel() }}
                                 </span>
                             </div>

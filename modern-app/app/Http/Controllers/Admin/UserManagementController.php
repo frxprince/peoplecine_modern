@@ -48,6 +48,9 @@ class UserManagementController extends Controller
             'role' => static function (Builder $query, string $direction): void {
                 $query->orderBy('role', $direction);
             },
+            'visit_count' => static function (Builder $query, string $direction): void {
+                $query->orderBy('visit_count', $direction);
+            },
         ];
 
         if (! array_key_exists($sort, $sortableColumns)) {
@@ -78,6 +81,8 @@ class UserManagementController extends Controller
                 ->orderBy('username'),
             'role' => $usersQuery
                 ->orderByDesc('legacy_level')
+                ->orderBy('username'),
+            'visit_count' => $usersQuery
                 ->orderBy('username'),
             'legacy_level' => $usersQuery
                 ->orderBy('username'),

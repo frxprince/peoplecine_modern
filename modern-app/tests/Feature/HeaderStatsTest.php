@@ -68,4 +68,49 @@ class HeaderStatsTest extends TestCase
         $response->assertSee('Click counter');
         $response->assertSee('Build datetime');
     }
+
+    public function test_sidebar_shows_current_member_click_count(): void
+    {
+        config(['app.locale' => 'en']);
+        app()->setLocale('en');
+
+        $member = User::query()->create([
+            'username' => 'click-member',
+            'email' => 'click-member@example.com',
+            'password' => bcrypt('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 1,
+            'visit_count' => 456,
+        ]);
+
+        $response = $this->actingAs($member)->get(route('dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Clicks');
+        $response->assertSee('457');
+    }
+
+    public function test_authenticated_member_click_count_increments_on_page_view(): void
+    {
+        config(['app.locale' => 'en']);
+        app()->setLocale('en');
+
+        $member = User::query()->create([
+            'username' => 'increment-member',
+            'email' => 'increment-member@example.com',
+            'password' => bcrypt('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 1,
+            'visit_count' => 12,
+        ]);
+
+        $this->actingAs($member)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('13');
+
+        $member->refresh();
+        $this->assertSame(13, $member->visit_count);
+    }
 }

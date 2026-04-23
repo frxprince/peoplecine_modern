@@ -25,6 +25,7 @@ class User extends Authenticatable
         'account_status',
         'legacy_level',
         'legacy_authorize',
+        'visit_count',
         'email_verified_at',
     ];
 
@@ -44,6 +45,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password_reset_required' => 'boolean',
             'legacy_level' => 'integer',
+            'visit_count' => 'integer',
             'password' => 'hashed',
         ];
     }

@@ -46,6 +46,13 @@ class AppServiceProvider extends ServiceProvider
             $unreadMessageCount = 0;
 
             if ($user !== null) {
+                User::withoutTimestamps(static function () use ($user): void {
+                    DB::table('users')
+                        ->where('id', $user->id)
+                        ->increment('visit_count');
+                });
+                $user->visit_count = (int) ($user->visit_count ?? 0) + 1;
+
                 $unreadMessageCount = DB::table('conversation_participants')
                     ->where('user_id', $user->id)
                     ->whereNull('conversation_participants.deleted_at')

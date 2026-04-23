@@ -697,6 +697,18 @@ a { color: inherit; text-decoration: none; }
     max-width: 720px;
     margin: 0 auto;
 }
+.landing-visitors {
+    margin-top: 1rem;
+}
+.landing-visitors__inline {
+    margin: 0;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #d4deed;
+    background: #f7faff;
+    color: #113a70;
+    line-height: 1.7;
+    word-break: break-word;
+}
 .legacy-link-button {
     display: inline-flex;
     justify-content: center;

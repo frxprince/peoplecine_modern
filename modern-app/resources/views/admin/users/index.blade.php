@@ -6,6 +6,7 @@
             'id' => 'asc',
             'user' => 'asc',
             'email' => 'asc',
+            'visit_count' => 'desc',
             'legacy_level' => 'desc',
             'account_status' => 'asc',
             'role' => 'desc',
@@ -203,6 +204,18 @@
                         <th>{{ __('Address') }}</th>
                         <th>{{ __('Phone') }}</th>
                         <th>
+                            <a class="admin-user-table__sort" href="{{ $sortLink('visit_count') }}">
+                                {{ __('Clicks') }}
+                                <span class="admin-user-table__sort-indicator">
+                                    @if ($currentSort === 'visit_count')
+                                        {{ $currentDirection === 'asc' ? '^' : 'v' }}
+                                    @else
+                                        +/-
+                                    @endif
+                                </span>
+                            </a>
+                        </th>
+                        <th>
                             <a class="admin-user-table__sort" href="{{ $sortLink('legacy_level') }}">
                                 {{ __('Level') }}
                                 <span class="admin-user-table__sort-indicator">
@@ -281,6 +294,7 @@
                             <td class="admin-user-table__phone">
                                 {{ $managedUser->profile?->phone ?: __('Not available') }}
                             </td>
+                            <td class="admin-user-table__id">{{ number_format((int) ($managedUser->visit_count ?? 0)) }}</td>
                             <td class="admin-user-table__cell-control">
                                 <select name="legacy_level" form="{{ $formId }}">
                                     @foreach ([0, 1, 2, 3, 4, 9] as $level)

@@ -95,6 +95,7 @@ class LegacyImporter
                 'account_status' => $this->mapAccountStatus($row),
                 'legacy_level' => $this->nullableInt($row['Levelx']),
                 'legacy_authorize' => $this->nullableString($row['Authorize']),
+                'visit_count' => max(0, $this->nullableInt($row['Visited']) ?? 0),
                 'created_at' => $this->normalizeDate($row['RegisterDate']) ?? now(),
                 'updated_at' => $this->normalizeDate($row['LastLogin']) ?? now(),
             ];

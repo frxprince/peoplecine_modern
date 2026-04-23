@@ -8,6 +8,9 @@ use App\Models\Room;
 use App\Models\Topic;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -15,6 +18,7 @@ class HomeController extends Controller
     {
         return view('landing', [
             'title' => __('PeopleCine Modern'),
+            'recentVisitors' => $this->recentVisitors(),
         ]);
     }
 
@@ -57,5 +61,56 @@ class HomeController extends Controller
                 'articles' => Article::count(),
             ],
         ]);
+    }
+
+    private function recentVisitors(): Collection
+    {
+        return DB::table('sessions')
+            ->leftJoin('users', 'users.id', '=', 'sessions.user_id')
+            ->leftJoin('user_profiles', 'user_profiles.user_id', '=', 'users.id')
+            ->orderByDesc('sessions.last_activity')
+            ->limit(200)
+            ->get([
+                'sessions.user_id',
+                'sessions.ip_address',
+                'sessions.last_activity',
+                'users.username',
+                'user_profiles.display_name',
+                'user_profiles.first_name',
+            ])
+            ->filter(function (object $session): bool {
+                return $session->user_id !== null || filled($session->ip_address);
+            })
+            ->unique(function (object $session): string {
+                if ($session->user_id !== null) {
+                    return 'user:'.$session->user_id;
+                }
+
+                return 'guest:'.strtolower((string) $session->ip_address);
+            })
+            ->take(20)
+            ->values()
+            ->map(function (object $session): array {
+                $name = trim((string) ($session->display_name ?? ''));
+
+                if ($name === '') {
+                    $name = trim((string) ($session->first_name ?? ''));
+                }
+
+                if ($name === '') {
+                    $name = trim((string) ($session->username ?? ''));
+                }
+
+                $isGuest = $session->user_id === null;
+
+                return [
+                    'label' => $isGuest ? (string) $session->ip_address : $name,
+                    'is_guest' => $isGuest,
+                    'last_seen' => Carbon::createFromTimestamp(
+                        (int) $session->last_activity,
+                        config('app.timezone', 'UTC')
+                    )->format('Y-m-d H:i'),
+                ];
+            });
     }
 }
