@@ -184,7 +184,7 @@
                         @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button class="sidebar-button" type="submit">{{ __('Log off') }}</button>
+                            <button class="sidebar-button" type="submit">{{ app()->getLocale() === 'th' ? 'ออกจากระบบ' : 'Log off' }}</button>
                         </form>
                     @else
                         <a href="{{ route('login') }}">{{ __('Member Login') }}</a>

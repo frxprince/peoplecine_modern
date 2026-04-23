@@ -180,7 +180,7 @@ class AccessControlTest extends TestCase
             ->assertOk()
             ->assertSee('ที่อยู่')
             ->assertSee('โทรศัพท์')
-            ->assertSee('Clicks')
+            ->assertSee('คลิก')
             ->assertSee('123 Archive Road 10200')
             ->assertSee('0812345678')
             ->assertSee('321');

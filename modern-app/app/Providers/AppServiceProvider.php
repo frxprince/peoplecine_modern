@@ -9,6 +9,7 @@ use App\Support\BannerManager;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -75,6 +76,24 @@ class AppServiceProvider extends ServiceProvider
                             });
                     })
                     ->count();
+            }
+
+            if (Schema::hasTable('recent_visitors')) {
+                $visitorIp = request()->ip();
+                $visitorKey = $user !== null
+                    ? 'user:'.$user->id
+                    : ($visitorIp !== null && $visitorIp !== '' ? 'guest:'.strtolower($visitorIp) : null);
+
+                if ($visitorKey !== null) {
+                    DB::table('recent_visitors')->updateOrInsert(
+                        ['visitor_key' => $visitorKey],
+                        [
+                            'user_id' => $user?->id,
+                            'ip_address' => $visitorIp,
+                            'last_visited_at' => now(),
+                        ]
+                    );
+                }
             }
 
             Cache::add('peoplecine.site_click_counter', 0, now()->addYears(10));

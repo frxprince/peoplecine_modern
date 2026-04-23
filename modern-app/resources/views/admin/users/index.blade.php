@@ -2,6 +2,12 @@
 
 @section('content')
     @php
+        $isThaiUi = app()->getLocale() === 'th';
+        $clicksColumnLabel = $isThaiUi ? 'คลิก' : 'Clicks';
+        $mailTestLabel = $isThaiUi ? 'ทดสอบอีเมล' : 'Mail Test';
+        $mailTestHelp = $isThaiUi
+            ? 'ส่งอีเมลทดสอบจากค่าตั้งค่าเมลของ Laravel ตอนนี้'
+            : 'Send a small test email from the current Laravel mail configuration.';
         $defaultDirections = [
             'id' => 'asc',
             'user' => 'asc',
@@ -44,62 +50,64 @@
     </section>
 
     <section class="panel">
-        <div class="panel__header">
-            <h2>{{ __('Mail Test') }}</h2>
-            <p>{{ __('Send a small test email from the current Laravel mail configuration.') }}</p>
-        </div>
+        <details class="admin-user-password-box" @if ($errors->hasAny(['mail_test', 'recipient_email', 'subject_line', 'body_text'])) open @endif>
+            <summary class="admin-user-password-box__summary">{{ $mailTestLabel }}</summary>
+            <div class="panel__header">
+                <p>{{ $mailTestHelp }}</p>
+            </div>
 
-        <form class="admin-search-form" method="POST" action="{{ route('admin.users.mail-test', $queryState) }}">
-            @csrf
-            <input name="page" type="hidden" value="{{ $users->currentPage() }}">
-            <input name="sort" type="hidden" value="{{ $currentSort }}">
-            <input name="direction" type="hidden" value="{{ $currentDirection }}">
-            <input name="search" type="hidden" value="{{ $currentSearch }}">
+            <form class="admin-search-form" method="POST" action="{{ route('admin.users.mail-test', $queryState) }}">
+                @csrf
+                <input name="page" type="hidden" value="{{ $users->currentPage() }}">
+                <input name="sort" type="hidden" value="{{ $currentSort }}">
+                <input name="direction" type="hidden" value="{{ $currentDirection }}">
+                <input name="search" type="hidden" value="{{ $currentSearch }}">
 
-            <label class="admin-search-form__label" for="mail-test-recipient">{{ __('Recipient email') }}</label>
-            <input
-                id="mail-test-recipient"
-                class="admin-search-form__input"
-                name="recipient_email"
-                type="email"
-                value="{{ old('recipient_email') }}"
-                placeholder="peoplecine@drpaween.com"
-                required
-            >
+                <label class="admin-search-form__label" for="mail-test-recipient">{{ __('Recipient email') }}</label>
+                <input
+                    id="mail-test-recipient"
+                    class="admin-search-form__input"
+                    name="recipient_email"
+                    type="email"
+                    value="{{ old('recipient_email') }}"
+                    placeholder="peoplecine@drpaween.com"
+                    required
+                >
 
-            <label class="admin-search-form__label" for="mail-test-subject">{{ __('Subject') }}</label>
-            <input
-                id="mail-test-subject"
-                class="admin-search-form__input"
-                name="subject_line"
-                type="text"
-                value="{{ old('subject_line', 'PeopleCine mail test') }}"
-                maxlength="160"
-            >
+                <label class="admin-search-form__label" for="mail-test-subject">{{ __('Subject') }}</label>
+                <input
+                    id="mail-test-subject"
+                    class="admin-search-form__input"
+                    name="subject_line"
+                    type="text"
+                    value="{{ old('subject_line', 'PeopleCine mail test') }}"
+                    maxlength="160"
+                >
 
-            <label class="admin-search-form__label" for="mail-test-body">{{ __('Message') }}</label>
-            <textarea
-                id="mail-test-body"
-                class="admin-search-form__input"
-                name="body_text"
-                rows="4"
-            >{{ old('body_text', "This is a test email from the PeopleCine admin panel.") }}</textarea>
+                <label class="admin-search-form__label" for="mail-test-body">{{ __('Message') }}</label>
+                <textarea
+                    id="mail-test-body"
+                    class="admin-search-form__input"
+                    name="body_text"
+                    rows="4"
+                >{{ old('body_text', "This is a test email from the PeopleCine admin panel.") }}</textarea>
 
-            <button class="button button--small" type="submit">{{ __('Send Test Email') }}</button>
-        </form>
+                <button class="button button--small" type="submit">{{ __('Send Test Email') }}</button>
+            </form>
 
-        @error('mail_test')
-            <p class="form-error">{{ $message }}</p>
-        @enderror
-        @error('recipient_email')
-            <p class="form-error">{{ $message }}</p>
-        @enderror
-        @error('subject_line')
-            <p class="form-error">{{ $message }}</p>
-        @enderror
-        @error('body_text')
-            <p class="form-error">{{ $message }}</p>
-        @enderror
+            @error('mail_test')
+                <p class="form-error">{{ $message }}</p>
+            @enderror
+            @error('recipient_email')
+                <p class="form-error">{{ $message }}</p>
+            @enderror
+            @error('subject_line')
+                <p class="form-error">{{ $message }}</p>
+            @enderror
+            @error('body_text')
+                <p class="form-error">{{ $message }}</p>
+            @enderror
+        </details>
     </section>
 
     <section class="panel">
@@ -108,7 +116,7 @@
             <p>{{ __(':count imported accounts.', ['count' => number_format($users->total())]) }}</p>
         </div>
 
-        <form class="admin-search-form" method="GET" action="{{ route('admin.users.index') }}">
+        <form class="admin-search-form" method="GET" action="{{ route('admin.users.index') }}" data-live-search-form>
             <input name="sort" type="hidden" value="{{ $currentSort }}">
             <input name="direction" type="hidden" value="{{ $currentDirection }}">
 
@@ -120,6 +128,8 @@
                 type="text"
                 value="{{ $currentSearch }}"
                 placeholder="{{ __('Search by ID, username, display name, or email') }}"
+                autocomplete="off"
+                data-live-search-input
             >
             <button class="button button--small" type="submit">{{ __('Search') }}</button>
 
@@ -205,7 +215,7 @@
                         <th>{{ __('Phone') }}</th>
                         <th>
                             <a class="admin-user-table__sort" href="{{ $sortLink('visit_count') }}">
-                                {{ __('Clicks') }}
+                                {{ $clicksColumnLabel }}
                                 <span class="admin-user-table__sort-indicator">
                                     @if ($currentSort === 'visit_count')
                                         {{ $currentDirection === 'asc' ? '^' : 'v' }}
@@ -382,32 +392,49 @@
             const selectAll = document.getElementById('select-all-users');
             const rowCheckboxes = Array.from(document.querySelectorAll('.admin-user-table__checkbox-item'));
 
-            if (!selectAll || rowCheckboxes.length === 0) {
-                return;
-            }
+            if (selectAll && rowCheckboxes.length > 0) {
+                const syncHeaderState = function () {
+                    const checkedCount = rowCheckboxes.filter(function (checkbox) {
+                        return checkbox.checked;
+                    }).length;
 
-            const syncHeaderState = function () {
-                const checkedCount = rowCheckboxes.filter(function (checkbox) {
-                    return checkbox.checked;
-                }).length;
+                    selectAll.checked = checkedCount === rowCheckboxes.length;
+                    selectAll.indeterminate = checkedCount > 0 && checkedCount < rowCheckboxes.length;
+                };
 
-                selectAll.checked = checkedCount === rowCheckboxes.length;
-                selectAll.indeterminate = checkedCount > 0 && checkedCount < rowCheckboxes.length;
-            };
+                selectAll.addEventListener('change', function () {
+                    rowCheckboxes.forEach(function (checkbox) {
+                        checkbox.checked = selectAll.checked;
+                    });
 
-            selectAll.addEventListener('change', function () {
+                    syncHeaderState();
+                });
+
                 rowCheckboxes.forEach(function (checkbox) {
-                    checkbox.checked = selectAll.checked;
+                    checkbox.addEventListener('change', syncHeaderState);
                 });
 
                 syncHeaderState();
-            });
+            }
 
-            rowCheckboxes.forEach(function (checkbox) {
-                checkbox.addEventListener('change', syncHeaderState);
-            });
+            const liveSearchForm = document.querySelector('[data-live-search-form]');
+            const liveSearchInput = document.querySelector('[data-live-search-input]');
 
-            syncHeaderState();
+            if (!liveSearchForm || !liveSearchInput) {
+                return;
+            }
+
+            let searchTimer = null;
+
+            liveSearchInput.addEventListener('input', function () {
+                if (searchTimer !== null) {
+                    window.clearTimeout(searchTimer);
+                }
+
+                searchTimer = window.setTimeout(function () {
+                    liveSearchForm.requestSubmit();
+                }, 300);
+            });
         });
     </script>
 @endsection

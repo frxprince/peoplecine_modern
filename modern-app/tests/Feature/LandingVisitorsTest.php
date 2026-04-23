@@ -28,22 +28,18 @@ class LandingVisitorsTest extends TestCase
             'display_name' => 'Landing Member',
         ]);
 
-        DB::table('sessions')->insert([
+        DB::table('recent_visitors')->insert([
             [
-                'id' => 'landing-member-session',
+                'visitor_key' => 'user:'.$member->id,
                 'user_id' => $member->id,
                 'ip_address' => '198.51.100.10',
-                'user_agent' => 'PHPUnit member',
-                'payload' => 'member-payload',
-                'last_activity' => now()->subMinute()->timestamp,
+                'last_visited_at' => now()->subMinute(),
             ],
             [
-                'id' => 'landing-guest-session',
+                'visitor_key' => 'guest:203.0.113.25',
                 'user_id' => null,
                 'ip_address' => '203.0.113.25',
-                'user_agent' => 'PHPUnit guest',
-                'payload' => 'guest-payload',
-                'last_activity' => now()->timestamp,
+                'last_visited_at' => now(),
             ],
         ]);
 
@@ -52,5 +48,48 @@ class LandingVisitorsTest extends TestCase
         $response->assertOk();
         $response->assertSee('Landing Member');
         $response->assertSee('203.0.113.25');
+    }
+
+    public function test_landing_page_keeps_only_twenty_latest_visitors_in_order(): void
+    {
+        $member = User::query()->create([
+            'username' => 'persistent-member',
+            'email' => 'persistent-member@example.com',
+            'password' => bcrypt('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 1,
+        ]);
+
+        UserProfile::query()->create([
+            'user_id' => $member->id,
+            'display_name' => 'Persistent Member',
+        ]);
+
+        DB::table('recent_visitors')->insert([
+            'visitor_key' => 'user:'.$member->id,
+            'user_id' => $member->id,
+            'ip_address' => '198.51.100.10',
+            'last_visited_at' => now()->subSeconds(5),
+        ]);
+
+        foreach (range(1, 21) as $index) {
+            DB::table('recent_visitors')->insert([
+                'visitor_key' => 'guest:203.0.113.'.$index,
+                'user_id' => null,
+                'ip_address' => '203.0.113.'.$index,
+                'last_visited_at' => now()->subSeconds($index + 10),
+            ]);
+        }
+
+        $response = $this->get(route('landing'));
+
+        $response->assertOk();
+        $response->assertSeeTextInOrder([
+            'Persistent Member',
+            '203.0.113.1',
+            '203.0.113.2',
+        ]);
+        $response->assertDontSee('203.0.113.21');
     }
 }

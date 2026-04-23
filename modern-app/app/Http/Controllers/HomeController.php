@@ -65,15 +65,15 @@ class HomeController extends Controller
 
     private function recentVisitors(): Collection
     {
-        return DB::table('sessions')
-            ->leftJoin('users', 'users.id', '=', 'sessions.user_id')
+        return DB::table('recent_visitors')
+            ->leftJoin('users', 'users.id', '=', 'recent_visitors.user_id')
             ->leftJoin('user_profiles', 'user_profiles.user_id', '=', 'users.id')
-            ->orderByDesc('sessions.last_activity')
-            ->limit(200)
+            ->orderByDesc('recent_visitors.last_visited_at')
+            ->limit(20)
             ->get([
-                'sessions.user_id',
-                'sessions.ip_address',
-                'sessions.last_activity',
+                'recent_visitors.user_id',
+                'recent_visitors.ip_address',
+                'recent_visitors.last_visited_at',
                 'users.username',
                 'user_profiles.display_name',
                 'user_profiles.first_name',
@@ -81,15 +81,6 @@ class HomeController extends Controller
             ->filter(function (object $session): bool {
                 return $session->user_id !== null || filled($session->ip_address);
             })
-            ->unique(function (object $session): string {
-                if ($session->user_id !== null) {
-                    return 'user:'.$session->user_id;
-                }
-
-                return 'guest:'.strtolower((string) $session->ip_address);
-            })
-            ->take(20)
-            ->values()
             ->map(function (object $session): array {
                 $name = trim((string) ($session->display_name ?? ''));
 
@@ -106,8 +97,8 @@ class HomeController extends Controller
                 return [
                     'label' => $isGuest ? (string) $session->ip_address : $name,
                     'is_guest' => $isGuest,
-                    'last_seen' => Carbon::createFromTimestamp(
-                        (int) $session->last_activity,
+                    'last_seen' => Carbon::parse(
+                        (string) $session->last_visited_at,
                         config('app.timezone', 'UTC')
                     )->format('Y-m-d H:i'),
                 ];
