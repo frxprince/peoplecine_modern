@@ -284,7 +284,7 @@
                                 <strong>
                                     <a
                                         class="admin-user-table__profile-link"
-                                        href="{{ route('members.show', $managedUser) }}"
+                                        href="{{ route('admin.users.profile', $managedUser) }}"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >

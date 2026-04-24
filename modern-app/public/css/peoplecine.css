@@ -2536,3 +2536,300 @@ h2 { font-size: 1.5rem; }
         flex-basis: 100%;
     }
 }
+
+.manual-hero .manual-callout {
+    margin-top: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 14px;
+    background: rgba(247, 237, 215, 0.92);
+    border: 1px solid rgba(138, 98, 39, 0.18);
+}
+
+.manual-callout strong {
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.manual-checklist,
+.manual-section-grid,
+.manual-compare-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.manual-checklist {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.manual-section-grid,
+.manual-compare-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 1rem;
+}
+
+.manual-card {
+    padding: 1rem 1.05rem;
+    border-radius: 16px;
+    background: #fbf7ed;
+    border: 1px solid rgba(126, 98, 54, 0.14);
+}
+
+.manual-card h3 {
+    margin: 0 0 0.55rem;
+}
+
+.manual-shot {
+    margin: 0;
+}
+
+.manual-shot img {
+    display: block;
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid rgba(126, 98, 54, 0.18);
+    box-shadow: 0 18px 34px rgba(63, 43, 18, 0.1);
+}
+
+.manual-shot figcaption {
+    margin-top: 0.7rem;
+    color: #6b5f4a;
+    font-size: 0.96rem;
+    line-height: 1.5;
+}
+
+.manual-screen {
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(126, 98, 54, 0.18);
+    background: linear-gradient(180deg, #f7f1e6 0%, #efe3cf 100%);
+    box-shadow: 0 18px 34px rgba(63, 43, 18, 0.1);
+}
+
+.manual-screen__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    background: #5d2413;
+    color: #fff8ea;
+}
+
+.manual-screen__topbar strong,
+.manual-screen__hero h3,
+.manual-screen__panel strong {
+    display: block;
+}
+
+.manual-screen__topbar span,
+.manual-screen__hero p {
+    font-size: 0.9rem;
+}
+
+.manual-screen__body {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.manual-screen__sidebar {
+    display: grid;
+    gap: 0.55rem;
+    align-content: start;
+}
+
+.manual-screen__menu-item,
+.manual-screen__badge,
+.manual-screen__button,
+.manual-screen__search,
+.manual-screen__field {
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+.manual-screen__menu-item {
+    padding: 0.7rem 0.85rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(126, 98, 54, 0.15);
+}
+
+.manual-screen__menu-item--active {
+    background: #fff0dc;
+    border-color: rgba(157, 61, 22, 0.28);
+    color: #9d3d16;
+    font-weight: 700;
+}
+
+.manual-screen__content {
+    display: grid;
+    gap: 1rem;
+}
+
+.manual-screen__hero,
+.manual-screen__panel {
+    padding: 1rem;
+    border-radius: 16px;
+    background: rgba(255, 252, 244, 0.88);
+    border: 1px solid rgba(126, 98, 54, 0.12);
+}
+
+.manual-screen__hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.manual-screen__hero h3 {
+    margin: 0 0 0.3rem;
+    font-size: 1.3rem;
+}
+
+.manual-screen__hero p {
+    margin: 0;
+    color: #6b5f4a;
+}
+
+.manual-screen__badge {
+    padding: 0.5rem 0.85rem;
+    background: rgba(157, 61, 22, 0.1);
+    color: #9d3d16;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.manual-screen__toolbar,
+.manual-screen__button-row,
+.manual-screen__columns,
+.manual-screen__form-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.manual-screen__toolbar {
+    grid-template-columns: 1fr auto auto;
+}
+
+.manual-screen__search,
+.manual-screen__field {
+    padding: 0.8rem 0.9rem;
+    background: #fff;
+    border: 1px solid rgba(126, 98, 54, 0.18);
+    color: #473b2a;
+}
+
+.manual-screen__button-row {
+    grid-auto-flow: column;
+    justify-content: start;
+    margin-top: 0.85rem;
+}
+
+.manual-screen__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.35rem;
+    padding: 0 1rem;
+    background: #9d3d16;
+    color: #fff;
+    font-weight: 700;
+}
+
+.manual-screen__button--ghost {
+    background: #fff;
+    color: #473b2a;
+    border: 1px solid rgba(126, 98, 54, 0.2);
+}
+
+.manual-screen__button--danger {
+    background: #8f2a22;
+}
+
+.manual-screen__table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid rgba(126, 98, 54, 0.14);
+}
+
+.manual-screen__table th,
+.manual-screen__table td {
+    padding: 0.75rem 0.85rem;
+    border-bottom: 1px solid rgba(126, 98, 54, 0.12);
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.manual-screen__table th {
+    background: #f7efdf;
+    color: #74644a;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.manual-screen__table tr:last-child td {
+    border-bottom: 0;
+}
+
+.manual-screen__columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manual-screen__form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manual-screen__field--wide {
+    grid-column: 1 / -1;
+}
+
+.manual-screen__banner-thumb {
+    height: 9rem;
+    margin-bottom: 0.8rem;
+    border-radius: 14px;
+    border: 1px solid rgba(126, 98, 54, 0.12);
+    background:
+        linear-gradient(135deg, rgba(157, 61, 22, 0.08), rgba(46, 36, 23, 0.03)),
+        repeating-linear-gradient(
+            45deg,
+            rgba(157, 61, 22, 0.1),
+            rgba(157, 61, 22, 0.1) 10px,
+            rgba(255, 255, 255, 0.5) 10px,
+            rgba(255, 255, 255, 0.5) 20px
+        );
+}
+
+.manual-list,
+.manual-steps {
+    margin: 0;
+    padding-left: 1.2rem;
+    line-height: 1.7;
+}
+
+.manual-list li + li,
+.manual-steps li + li {
+    margin-top: 0.45rem;
+}
+
+@media (max-width: 900px) {
+    .manual-checklist,
+    .manual-section-grid,
+    .manual-compare-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .manual-screen__body,
+    .manual-screen__columns,
+    .manual-screen__form-grid,
+    .manual-screen__toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .manual-screen__button-row {
+        grid-auto-flow: row;
+    }
+}

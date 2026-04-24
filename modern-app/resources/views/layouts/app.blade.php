@@ -22,6 +22,7 @@
 <body>
     @php($cookieConsent = request()->cookie('peoplecine_cookie_consent'))
     @php($currentLocale = app()->getLocale())
+    @php($eulaLabel = $currentLocale === 'th' ? 'ข้อตกลงการใช้งาน' : 'EULA')
     @php($changePasswordLabel = $currentLocale === 'th' ? 'เปลี่ยนรหัสผ่าน' : 'Change Password')
     @php($projectorManualLabel = $currentLocale === 'th' ? 'คู่มือโปรเจคเตอร์' : 'Projector manual')
     @php($bannerAdminLabel = $currentLocale === 'th' ? 'จัดการแบนเนอร์' : 'Banner Admin')
@@ -84,6 +85,7 @@
                                 <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
                                 <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
                                 <a href="{{ route('admin.banners.index') }}">{{ $bannerAdminLabel }}</a>
+                                <a href="{{ route('admin.manual.index') }}">{{ $currentLocale === 'th' ? 'คู่มือผู้ดูแลระบบ' : 'Admin Manual' }}</a>
                             </div>
                         </details>
                     @endif
@@ -91,6 +93,7 @@
                     <a href="{{ route('login') }}">{{ __('Member Login') }}</a>
                     <a href="{{ route('register') }}">{{ __('Register') }}</a>
                 @endauth
+                <a href="{{ route('eula') }}">{{ $eulaLabel }}</a>
                 <div class="legacy-topnav__locale-group" aria-label="{{ __('Language switcher') }}">
                     <a
                         class="legacy-topnav__locale {{ $currentLocale === 'th' ? 'is-active' : '' }}"
@@ -179,6 +182,7 @@
                                     <a href="{{ route('admin.users.index') }}">{{ __('User Admin') }}</a>
                                     <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
                                     <a href="{{ route('admin.banners.index') }}">{{ $bannerAdminLabel }}</a>
+                                    <a href="{{ route('admin.manual.index') }}">{{ $currentLocale === 'th' ? 'คู่มือผู้ดูแลระบบ' : 'Admin Manual' }}</a>
                                 </div>
                             </details>
                         @endif
@@ -190,6 +194,7 @@
                         <a href="{{ route('login') }}">{{ __('Member Login') }}</a>
                         <a href="{{ route('register') }}">{{ __('Register') }}</a>
                     @endauth
+                    <a href="{{ route('eula') }}">{{ $eulaLabel }}</a>
                 </section>
 
                 <section class="legacy-menu">

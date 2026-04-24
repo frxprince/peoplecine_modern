@@ -4,17 +4,26 @@
     @php($isThaiUi = app()->getLocale() === 'th')
     @php($t = static fn (string $thai, string $english): string => $isThaiUi ? $thai : $english)
     @php($profile = $profileUser->profile)
-    @php($addressVisible = $profile?->addressVisibleTo(auth()->user()) ?? false)
     @php($viewer = auth()->user())
     @php($isSelf = $viewer && (int) $viewer->id === (int) $profileUser->id)
     @php($isBlocked = $viewer?->hasBlockedUser($profileUser) ?? false)
     @php($isMuted = $viewer?->hasMutedUser($profileUser) ?? false)
+    @php($showAdminDetails = $showAdminDetails ?? false)
+
     <section class="panel panel--hero">
         <p class="eyebrow">{{ $t('โปรไฟล์สมาชิก', 'Member Profile') }}</p>
         <h1>{{ $profileUser->displayName() }}</h1>
         <p class="lede">
             {{ $t('ชื่อผู้ใช้: ', 'Username: ') }}{{ $profileUser->username }} | {{ $profileUser->memberLevelLabel() }}
         </p>
+
+        @if ($showAdminDetails)
+            <div class="callout">
+                <strong>{{ $t('มุมมองผู้ดูแลระบบ', 'Administrator view') }}</strong>
+                <p>{{ $t('หน้านี้เปิดจาก User Admin จึงแสดงข้อมูลติดต่อเต็มรูปแบบของสมาชิกท่านนี้', 'This profile was opened from User Admin, so full contact details are visible to administrators.') }}</p>
+            </div>
+        @endif
+
         @auth
             @if (! $isSelf && auth()->user()?->canUsePrivateMessages())
                 <div class="inline-actions">
@@ -87,14 +96,12 @@
                 </div>
                 <div class="stack-card">
                     <div>
-                        <strong>{{ $t('รหัสไปรษณีย์', 'Postcode') }}</strong>
-                        <p>
-                            @if ($addressVisible)
-                                {{ $profile?->postal_code ?: $t('ไม่ได้เปิดเผย', 'Not shared') }}
-                            @else
-                                {{ $t('สมาชิกซ่อนไว้', 'Hidden by member') }}
-                            @endif
-                        </p>
+                        <strong>{{ $t('ข้อมูลติดต่อ', 'Contact details') }}</strong>
+                        @if ($showAdminDetails)
+                            <p>{{ $t('ผู้ดูแลระบบสามารถเห็นอีเมล โทรศัพท์ รหัสไปรษณีย์ และที่อยู่เต็มรูปแบบได้จากมุมมองนี้', 'Administrators can see email, phone, postcode, and full address in this view.') }}</p>
+                        @else
+                            <p>{{ $t('อีเมลและที่อยู่จะไม่แสดงบนโปรไฟล์สาธารณะ', 'Email and address are hidden from public profiles.') }}</p>
+                        @endif
                     </div>
                 </div>
                 <div class="stack-card">
@@ -107,6 +114,41 @@
         </section>
     </section>
 
+    @if ($showAdminDetails)
+        <section class="panel">
+            <div class="panel__header">
+                <h2>{{ $t('ข้อมูลติดต่อสำหรับผู้ดูแลระบบ', 'Administrator-only contact details') }}</h2>
+            </div>
+
+            <div class="stack-list">
+                <div class="stack-card">
+                    <div>
+                        <strong>{{ $t('อีเมล', 'Email') }}</strong>
+                        <p>{{ $profileUser->email ?: $t('ไม่มีอีเมล', 'No email') }}</p>
+                    </div>
+                </div>
+                <div class="stack-card">
+                    <div>
+                        <strong>{{ $t('โทรศัพท์', 'Phone') }}</strong>
+                        <p>{{ $profile?->phone ?: $t('ไม่มีข้อมูล', 'Not available') }}</p>
+                    </div>
+                </div>
+                <div class="stack-card">
+                    <div>
+                        <strong>{{ $t('รหัสไปรษณีย์', 'Postcode') }}</strong>
+                        <p>{{ $profile?->postal_code ?: $t('ไม่มีข้อมูล', 'Not available') }}</p>
+                    </div>
+                </div>
+                <div class="stack-card">
+                    <div>
+                        <strong>{{ $t('ที่อยู่', 'Address') }}</strong>
+                        <p>{{ $profile?->address ?: $t('ไม่มีข้อมูลที่อยู่', 'No address available.') }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
     <section class="stats-grid stats-grid--dashboard">
         <article class="stat-card">
             <span class="stat-card__label">{{ $t('หัวข้อ', 'Topics') }}</span>
@@ -116,19 +158,6 @@
             <span class="stat-card__label">{{ $t('โพสต์', 'Posts') }}</span>
             <span class="stat-card__value">{{ number_format($profileUser->posts_count) }}</span>
         </article>
-    </section>
-
-    <section class="panel">
-        <div class="panel__header">
-            <h2>{{ $t('ที่อยู่', 'Address') }}</h2>
-        </div>
-        <p class="lede">
-            @if ($addressVisible)
-                {{ $profile?->address ?: $t('ไม่มีข้อมูลที่อยู่', 'No address available.') }}
-            @else
-                {{ $t('สมาชิกท่านนี้ซ่อนข้อมูลที่อยู่ไว้', 'This member has hidden their address.') }}
-            @endif
-        </p>
     </section>
 
     <section class="panel">

@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Admin\AdminManualController;
 use App\Http\Controllers\Admin\BannerManagementController;
 use App\Http\Controllers\Admin\RoomManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\CalculatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectMessagePreferenceController;
+use App\Http\Controllers\EulaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegacyArticleMediaController;
 use App\Http\Controllers\LegacyArticlePdfController;
@@ -38,6 +40,7 @@ Route::get('/calculator/throw/{screen}', [CalculatorController::class, 'throwCal
 Route::get('/calculator/lenssim', [CalculatorController::class, 'lensSimulation'])->name('calculator.lenssim');
 Route::get('/calculator/screendesign', [CalculatorController::class, 'screenDesign'])->name('calculator.screendesign');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+Route::get('/eula', EulaController::class)->name('eula');
 Route::get('/projector-manual', [ProjectorManualController::class, 'index'])->name('projector-manual.index');
 Route::get('/rooms/{room:slug}', [RoomController::class, 'show'])->name('rooms.show');
 Route::get('/topics/{topic}', [TopicController::class, 'show'])->name('topics.show');
@@ -102,7 +105,9 @@ Route::middleware(['auth', 'password.reset.completed'])->group(function () {
 });
 
 Route::middleware(['auth', 'password.reset.completed', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/manual', [AdminManualController::class, 'index'])->name('manual.index');
     Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}/profile', [ProfileController::class, 'showFromAdmin'])->name('users.profile');
     Route::put('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
     Route::put('/users/{user}/password', [UserManagementController::class, 'updatePassword'])->name('users.password.update');
     Route::post('/users/mail-test', [UserManagementController::class, 'sendTestMail'])->name('users.mail-test');

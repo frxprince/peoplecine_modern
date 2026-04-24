@@ -22,6 +22,21 @@ class ProfileController extends Controller
                 $user->displayName().' Profile'
             ),
             'profileUser' => $user->load('profile')->loadCount(['topics', 'posts']),
+            'showAdminDetails' => false,
+        ]);
+    }
+
+    public function showFromAdmin(Request $request, \App\Models\User $user): View
+    {
+        abort_unless($request->user()?->isAdmin(), 403);
+
+        return view('profile.show', [
+            'title' => $this->label(
+                $user->displayName().' เนเธเธฃเนเธเธฅเน',
+                $user->displayName().' Profile'
+            ),
+            'profileUser' => $user->load('profile')->loadCount(['topics', 'posts']),
+            'showAdminDetails' => true,
         ]);
     }
 

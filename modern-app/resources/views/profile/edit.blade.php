@@ -97,16 +97,10 @@
                 @enderror
             </div>
 
-            <label class="checkbox-field" for="hide_address">
-                <input
-                    id="hide_address"
-                    name="hide_address"
-                    type="checkbox"
-                    value="1"
-                    @checked(old('hide_address', $user->profile?->hide_address))
-                >
-                {{ $t('ซ่อนที่อยู่ของฉันจากสมาชิกคนอื่น แต่ผู้ดูแลระบบยังมองเห็นได้', 'Hide my address from other members. Admins can still see it.') }}
-            </label>
+            <div class="callout">
+                <strong>{{ $t('ความเป็นส่วนตัวของข้อมูลติดต่อ', 'Contact privacy') }}</strong>
+                <p>{{ $t('อีเมลและที่อยู่ของคุณจะไม่แสดงบนโปรไฟล์สาธารณะ โดยผู้ดูแลระบบจะเห็นข้อมูลนี้ได้จากหน้า User Admin เท่านั้น', 'Your email address and street address are hidden from public profiles. Administrators can review them only from the User Admin page.') }}</p>
+            </div>
 
             <div class="form-field">
                 <label for="biography">{{ $t('ประวัติส่วนตัว', 'Biography') }}</label>

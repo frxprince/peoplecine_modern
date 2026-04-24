@@ -796,8 +796,9 @@ class AccessControlTest extends TestCase
         $profileResponse->assertOk();
         $profileResponse->assertSee('Poster Member');
         $profileResponse->assertSee('Bangkok');
-        $profileResponse->assertSee('10200');
-        $profileResponse->assertSee('99 Archive Road');
+        $profileResponse->assertDontSee('10200');
+        $profileResponse->assertDontSee('99 Archive Road');
+        $profileResponse->assertSee('อีเมลและที่อยู่จะไม่แสดงบนโปรไฟล์สาธารณะ');
     }
 
     public function test_level_two_member_cannot_open_poster_profile(): void
@@ -865,7 +866,7 @@ class AccessControlTest extends TestCase
         $this->actingAs($viewer)->get(route('members.show', $poster))->assertForbidden();
     }
 
-    public function test_hidden_address_is_hidden_from_members_but_visible_to_admin(): void
+    public function test_contact_details_are_hidden_on_public_profile_but_visible_in_admin_profile_view_and_user_admin_table(): void
     {
         $poster = User::query()->create([
             'username' => 'hidden-address-user',
@@ -879,6 +880,7 @@ class AccessControlTest extends TestCase
             'user_id' => $poster->id,
             'display_name' => 'Hidden Address User',
             'province' => 'Chiang Mai',
+            'phone' => '0899999999',
             'postal_code' => '50000',
             'address' => '55 Secret Street',
             'hide_address' => true,
@@ -918,7 +920,20 @@ class AccessControlTest extends TestCase
 
         $adminResponse = $this->actingAs($admin)->get(route('members.show', $poster));
         $adminResponse->assertOk();
-        $adminResponse->assertSee('55 Secret Street');
-        $adminResponse->assertSee('50000');
+        $adminResponse->assertDontSee('55 Secret Street');
+        $adminResponse->assertDontSee('50000');
+
+        $adminProfileResponse = $this->actingAs($admin)->get(route('admin.users.profile', $poster));
+        $adminProfileResponse->assertOk();
+        $adminProfileResponse->assertSee('55 Secret Street');
+        $adminProfileResponse->assertSee('50000');
+        $adminProfileResponse->assertSee('hidden-address@example.com');
+        $adminProfileResponse->assertSee('0899999999');
+
+        $adminTableResponse = $this->actingAs($admin)->get(route('admin.users.index'));
+        $adminTableResponse->assertOk();
+        $adminTableResponse->assertSee(route('admin.users.profile', $poster), false);
+        $adminTableResponse->assertSee('55 Secret Street 50000');
+        $adminTableResponse->assertSee('hidden-address@example.com');
     }
 }
