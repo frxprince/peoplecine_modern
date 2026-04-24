@@ -1,10 +1,11 @@
 @props([
     'user' => null,
-    'fallback' => 'Archived member',
+    'fallback' => null,
     'strong' => false,
 ])
 
 @php
+    $fallback = $fallback ?? (app()->getLocale() === 'th' ? 'สมาชิกที่ถูกเก็บเข้าคลัง' : 'Archived member');
     $name = $user?->displayName() ?? $fallback;
     $avatarUrl = $user?->avatarUrl();
     $profileUrl = auth()->check() && $user !== null && auth()->user()?->canViewMemberProfiles()

@@ -2002,6 +2002,18 @@ h2 { font-size: 1.5rem; }
     text-decoration: underline;
 }
 
+.form-field--invalid input,
+.form-field--invalid textarea,
+.form-field--invalid .tox-tinymce {
+    border-color: #b53322 !important;
+    box-shadow: 0 0 0 1px rgba(181, 51, 34, 0.14);
+}
+
+.legacy-uploader--invalid .legacy-uploader__dropzone {
+    border-color: #b53322;
+    box-shadow: inset 0 0 0 1px rgba(181, 51, 34, 0.12);
+}
+
 @media (max-width: 980px) {
     .legacy-body {
         grid-template-columns: 1fr;

@@ -1,25 +1,24 @@
 @extends('layouts.app', ['title' => __('PeopleCine Main Forum')])
 
-@php($projectorManualLabel = app()->getLocale() === 'th' ? 'คู่มือโปรเจคเตอร์' : 'Projector manual')
-
+@php($t = static fn (string $thai, string $english): string => app()->getLocale() === 'th' ? $thai : $english)
 @php($latestUpdateLabel = app()->getLocale() === 'th' ? 'อัปเดตล่าสุด' : 'Latest update')
 @php($latestUpdateDescription = app()->getLocale() === 'th' ? 'ความเคลื่อนไหวล่าสุดจากหัวข้อในเว็บบอร์ด' : 'Latest activity from the forum topics.')
 
 @section('content')
     <section class="legacy-panel">
         <div class="legacy-panel__header">
-            <h2>{{ __('Open-air cinema community') }}</h2>
+            <h2>{{ $t('ชุมชนหนังกลางแปลง', 'Open-air cinema community') }}</h2>
         </div>
 
         <div class="forum-table-wrap">
             <table class="forum-table">
                 <thead>
                     <tr>
-                        <th width="40%">{{ __('Section') }}</th>
-                        <th width="8%">{{ __('Topic') }}</th>
-                        <th width="8%">{{ __('Read') }}</th>
-                        <th width="8%">{{ __('Reply') }}</th>
-                        <th width="36%">{{ __('Last') }}</th>
+                        <th width="40%">{{ $t('ห้อง', 'Section') }}</th>
+                        <th width="8%">{{ $t('หัวข้อ', 'Topic') }}</th>
+                        <th width="8%">{{ $t('อ่าน', 'Read') }}</th>
+                        <th width="8%">{{ $t('ตอบ', 'Reply') }}</th>
+                        <th width="36%">{{ $t('ล่าสุด', 'Last') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,19 +52,19 @@
                                     <div class="forum-last-meta">
                                         @include('partials.author-badge', [
                                             'user' => $room->latestTopic->author,
-                                            'fallback' => 'Archived member',
+                                            'fallback' => $t('สมาชิกที่ถูกเก็บเข้าคลัง', 'Archived member'),
                                         ])
                                         |
-                                        {{ optional($room->latestTopic->last_posted_at)->format('d M Y H:i') ?: __('Archive') }}
+                                        {{ optional($room->latestTopic->last_posted_at)->format('d M Y H:i') ?: $t('คลังข้อมูล', 'Archive') }}
                                     </div>
                                 @else
-                                    <span class="empty-state">{{ __('No topics yet.') }}</span>
+                                    <span class="empty-state">{{ $t('ยังไม่มีหัวข้อ', 'No topics yet.') }}</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="forum-table__empty">{{ __('No forum rooms imported yet.') }}</td>
+                            <td colspan="5" class="forum-table__empty">{{ $t('ยังไม่มีการนำเข้าห้องเว็บบอร์ด', 'No forum rooms imported yet.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -80,23 +79,5 @@
         </div>
 
         @include('partials.latest-topic-table', ['topics' => $latestTopics])
-        {{--
-            @forelse ($latestTopics as $topic)
-                <a class="legacy-topic-row" href="{{ route('topics.show', $topic) }}">
-                    <div>
-                        <strong>
-                            @if ($topic->hasPostedImage())
-                                @include('partials.camera-indicator')
-                            @endif
-                            {{ $topic->title }}
-                        </strong>
-                        <p>{{ $topic->room?->name }} ยท {{ optional($topic->author?->profile)->display_name ?? $topic->author?->username ?? 'Archived member' }}</p>
-                    </div>
-                    <span>{{ optional($topic->last_posted_at)->format('d M Y H:i') ?: 'Archive' }}</span>
-                </a>
-            @empty
-                <p class="empty-state">No topics imported yet.</p>
-            @endforelse
-        --}}
     </section>
 @endsection

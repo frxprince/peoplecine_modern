@@ -105,6 +105,51 @@ class LegacyMediaServingTest extends TestCase
         $response->assertDontSee('>sample.jpg<', false);
     }
 
+    public function test_topic_page_rewrites_inline_legacy_picpost_image_with_uppercase_extension(): void
+    {
+        $root = storage_path('app/private/test-inline-legacy-picpost-uppercase');
+        $picpost = $root.DIRECTORY_SEPARATOR.'picpost'.DIRECTORY_SEPARATOR.'2026'.DIRECTORY_SEPARATOR.'04';
+        File::ensureDirectoryExists($picpost);
+        File::put($picpost.DIRECTORY_SEPARATOR.'INLINE.JPG', 'fake-inline-image');
+
+        config()->set('peoplecine.legacy_wboard_root', $root);
+
+        $room = Room::query()->create([
+            'slug' => 'inline-media-room',
+            'name' => 'Inline Media Room',
+            'access_level' => 0,
+            'sort_order' => 1,
+            'is_archived' => false,
+        ]);
+
+        $topic = Topic::query()->create([
+            'room_id' => $room->id,
+            'title' => 'Inline Image Topic',
+            'visibility_level' => 0,
+            'is_pinned' => false,
+            'is_locked' => false,
+            'view_count' => 0,
+            'reply_count' => 0,
+            'last_posted_at' => now(),
+        ]);
+
+        Post::query()->create([
+            'topic_id' => $topic->id,
+            'legacy_source_table' => 'topics',
+            'legacy_source_id' => 123,
+            'position_in_topic' => 1,
+            'body_html' => '<p><img src="picpost/2026/04/inline.jpg" alt="Inline"></p>',
+        ]);
+
+        $response = $this->get(route('topics.show', $topic));
+
+        $response->assertOk();
+        $response->assertSee('legacy-inline-media?path=picpost%2F2026%2F04%2Finline.jpg', false);
+
+        $this->get(route('legacy-inline-media.show', ['path' => 'picpost/2026/04/inline.jpg']))
+            ->assertOk();
+    }
+
     public function test_home_page_marks_topics_with_posted_images(): void
     {
         $room = Room::query()->create([

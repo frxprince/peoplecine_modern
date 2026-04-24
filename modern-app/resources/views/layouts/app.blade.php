@@ -283,6 +283,7 @@
     <script src="{{ $versionedAsset('js/legacy-image-viewer.js') }}" defer></script>
     <script src="{{ $versionedAsset('js/legacy-composer.js') }}" defer></script>
     <script src="{{ $versionedAsset('js/staged-composer.js') }}" defer></script>
+    <script src="{{ $versionedAsset('js/forum-form-validation.js') }}" defer></script>
     @yield('pageScripts')
     <script src="/vendor/tinymce/tinymce.min.js" defer></script>
     <script src="{{ $versionedAsset('js/legacy-tinymce.js') }}" defer></script>

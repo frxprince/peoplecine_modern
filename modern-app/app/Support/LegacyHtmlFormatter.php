@@ -276,7 +276,7 @@ class LegacyHtmlFormatter
 
             if (in_array($normalizedName, self::URI_ATTRIBUTES, true)) {
                 $value = trim($element->getAttribute($attributeName));
-                $rewritten = self::rewriteLegacyArticleUrl($value);
+                $rewritten = self::rewriteLegacyUrl($value);
 
                 if ($rewritten !== null) {
                     $element->setAttribute($attributeName, $rewritten);
@@ -290,7 +290,7 @@ class LegacyHtmlFormatter
         }
     }
 
-    private static function rewriteLegacyArticleUrl(string $value): ?string
+    private static function rewriteLegacyUrl(string $value): ?string
     {
         if ($value === '') {
             return null;
@@ -305,10 +305,63 @@ class LegacyHtmlFormatter
         $path = self::extractLegacyArticlePath($value);
 
         if ($path === null) {
+            $forumMediaPath = self::extractLegacyForumMediaPath($value);
+
+            if ($forumMediaPath !== null) {
+                return route('legacy-inline-media.show', ['path' => $forumMediaPath], false);
+            }
+
             return null;
         }
 
         return route('legacy-article-media.show', ['path' => $path], false);
+    }
+
+    private static function extractLegacyForumMediaPath(string $value): ?string
+    {
+        if (preg_match('/[\x00-\x1F\x7F]/u', $value) === 1) {
+            return null;
+        }
+
+        $normalizedValue = str_replace('\\', '/', trim($value));
+        $parts = parse_url($normalizedValue);
+
+        if ($parts === false) {
+            return null;
+        }
+
+        $host = Str::lower((string) ($parts['host'] ?? ''));
+
+        if ($host !== '' && ! in_array($host, ['thaicine.com', 'www.thaicine.com', 'peoplecine.com', 'www.peoplecine.com'], true)) {
+            return null;
+        }
+
+        $path = str_replace('\\', '/', (string) ($parts['path'] ?? ''));
+
+        if ($path === '' && ! str_starts_with($normalizedValue, '/')) {
+            $path = $normalizedValue;
+        }
+
+        $segments = preg_split('~/+~', ltrim($path, '/')) ?: [];
+        $lowerSegments = array_map(static fn ($segment) => Str::lower($segment), $segments);
+        $wboardIndex = array_search('wboard', $lowerSegments, true);
+
+        if ($wboardIndex !== false) {
+            $segments = array_slice($segments, $wboardIndex + 1);
+            $lowerSegments = array_slice($lowerSegments, $wboardIndex + 1);
+        }
+
+        if ($segments === []) {
+            return null;
+        }
+
+        if (! in_array($lowerSegments[0], ['uploads', 'picpost', 'icons'], true)) {
+            return null;
+        }
+
+        $normalized = implode('/', array_filter($segments, static fn ($segment) => $segment !== ''));
+
+        return $normalized !== '' ? $normalized : null;
     }
 
     private static function extractLegacyArticlePath(string $value): ?string

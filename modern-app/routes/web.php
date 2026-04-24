@@ -18,6 +18,7 @@ use App\Http\Controllers\EulaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegacyArticleMediaController;
 use App\Http\Controllers\LegacyArticlePdfController;
+use App\Http\Controllers\LegacyInlineMediaController;
 use App\Http\Controllers\LegacyMediaController;
 use App\Http\Controllers\PrivateMessageController;
 use App\Http\Controllers\ComposerUploadController;
@@ -48,6 +49,7 @@ Route::get('/articles', [ArticleController::class, 'index'])->name('articles.ind
 Route::get('/articles/pdf/{filename}', LegacyArticlePdfController::class)->where('filename', '[^/\\\\]+')->name('legacy-article-pdf.show');
 Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
 Route::get('/legacy-article-media', LegacyArticleMediaController::class)->name('legacy-article-media.show');
+Route::get('/legacy-inline-media', LegacyInlineMediaController::class)->name('legacy-inline-media.show');
 Route::get('/legacy-media/{attachment}', LegacyMediaController::class)->name('legacy-media.show');
 Route::get('/avatars/{user}', AvatarController::class)->name('avatars.show');
 Route::get('/managed-banners/{section}/{filename}', ManagedBannerController::class)

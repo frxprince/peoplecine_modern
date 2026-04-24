@@ -521,6 +521,28 @@ class PostingFlowsTest extends TestCase
             ->assertSee('data-tinymce-textarea', false);
     }
 
+    public function test_room_and_topic_pages_render_client_side_forum_validation_markup(): void
+    {
+        $user = $this->createMember('validator-member', 3);
+        $room = $this->createRoom('validator-room');
+        $topic = $this->createTopicOwnedBy($user, 'Validator Topic', 'Existing body');
+
+        $this->actingAs($user)
+            ->get(route('rooms.show', $room))
+            ->assertOk()
+            ->assertSee('forum-form-validation.js', false)
+            ->assertSee('data-forum-validate', false)
+            ->assertSee('data-require-title="true"', false)
+            ->assertSee('data-require-body="true"', false)
+            ->assertSee('data-forum-required="title"', false);
+
+        $this->actingAs($user)
+            ->get(route('topics.show', $topic))
+            ->assertOk()
+            ->assertSee('forum-form-validation.js', false)
+            ->assertSee('data-require-body-or-image="true"', false);
+    }
+
     private function createMember(string $username, int $level): User
     {
         $user = User::query()->create([

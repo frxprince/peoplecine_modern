@@ -1,12 +1,14 @@
+@php($t = static fn (string $thai, string $english): string => app()->getLocale() === 'th' ? $thai : $english)
+
 <div class="forum-table-wrap">
     <table class="forum-table forum-topic-table">
         <thead>
             <tr>
-                <th width="44%">{{ __('Topic') }}</th>
-                <th width="20%">{{ __('Room') }}</th>
-                <th width="10%">{{ __('Read') }}</th>
-                <th width="10%">{{ __('Reply') }}</th>
-                <th width="16%">{{ __('Last') }}</th>
+                <th width="44%">{{ $t('หัวข้อ', 'Topic') }}</th>
+                <th width="20%">{{ $t('ห้อง', 'Room') }}</th>
+                <th width="10%">{{ $t('อ่าน', 'Read') }}</th>
+                <th width="10%">{{ $t('ตอบ', 'Reply') }}</th>
+                <th width="16%">{{ $t('ล่าสุด', 'Last') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -25,7 +27,7 @@
                         <div class="forum-topic-meta">
                             @include('partials.author-badge', [
                                 'user' => $topic->author,
-                                'fallback' => 'Archived member',
+                                'fallback' => $t('สมาชิกที่ถูกเก็บเข้าคลัง', 'Archived member'),
                             ])
                         </div>
                     </td>
@@ -38,20 +40,20 @@
                                 @endif
                             </a>
                         @else
-                            <span class="empty-state">{{ __('Archive') }}</span>
+                            <span class="empty-state">{{ $t('คลังข้อมูล', 'Archive') }}</span>
                         @endif
                     </td>
                     <td class="forum-table__number">{{ number_format($topic->view_count) }}</td>
                     <td class="forum-table__number">{{ number_format($topic->reply_count) }}</td>
                     <td>
                         <div class="forum-last-meta">
-                            {{ optional($topic->last_posted_at)->format('d M Y H:i') ?: __('Archive') }}
+                            {{ optional($topic->last_posted_at)->format('d M Y H:i') ?: $t('คลังข้อมูล', 'Archive') }}
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="forum-table__empty">{{ __('No topics imported yet.') }}</td>
+                    <td colspan="5" class="forum-table__empty">{{ $t('ยังไม่มีการนำเข้าหัวข้อ', 'No topics imported yet.') }}</td>
                 </tr>
             @endforelse
         </tbody>

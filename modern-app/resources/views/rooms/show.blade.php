@@ -2,9 +2,10 @@
 
 @section('content')
     @php($maxPostImages = (int) config('peoplecine.post_image_limit', 12))
+    @php($t = static fn (string $thai, string $english): string => app()->getLocale() === 'th' ? $thai : $english)
 
     <section class="panel panel--hero">
-        <p class="eyebrow">{{ __('Forum Room') }}</p>
+        <p class="eyebrow">{{ $t('ห้องเว็บบอร์ด', 'Forum Room') }}</p>
         <h1>
             {!! $room->coloredLocalizedNameHtml() !!}
             @if ($room->hasRecentActivity())
@@ -18,41 +19,41 @@
 
     <section class="panel composer-panel">
         <div class="panel__header">
-            <h2>{{ __('Create New Topic') }}</h2>
+            <h2>{{ $t('ตั้งหัวข้อใหม่', 'Create New Topic') }}</h2>
             @auth
                 <p>
                     @if (auth()->user()->canCreateTopic())
-                        {{ __('Start a new discussion in this room.') }}
+                        {{ $t('เริ่มต้นการสนทนาใหม่ในห้องนี้', 'Start a new discussion in this room.') }}
                     @else
-                        {{ __('Your current member level cannot create a new topic yet.') }}
+                        {{ $t('ระดับสมาชิกปัจจุบันของคุณยังไม่สามารถตั้งหัวข้อใหม่ได้', 'Your current member level cannot create a new topic yet.') }}
                     @endif
                 </p>
             @else
-                <p>{{ __('Sign in to create a new topic.') }}</p>
+                <p>{{ $t('เข้าสู่ระบบเพื่อตั้งหัวข้อใหม่', 'Sign in to create a new topic.') }}</p>
             @endauth
         </div>
 
         @auth
             @if (auth()->user()->canCreateTopic())
-                <form class="form-stack" method="POST" action="{{ route('rooms.topics.store', $room) }}" enctype="multipart/form-data">
+                <form class="form-stack" method="POST" action="{{ route('rooms.topics.store', $room) }}" enctype="multipart/form-data" data-forum-validate data-require-title="true" data-require-body="true" data-error-title-required="{{ $t('กรุณาใส่ชื่อหัวข้อก่อนโพสต์', 'Please enter a topic title before posting.') }}" data-error-body-required="{{ $t('กรุณาใส่ข้อความหัวข้อก่อนโพสต์', 'Please enter a topic message before posting.') }}" novalidate>
                     @csrf
 
-                    <div class="form-field">
-                        <label for="title">{{ __('Topic Title') }}</label>
-                        <input id="title" name="title" type="text" value="{{ old('title') }}" maxlength="500">
+                    <div class="form-field" data-forum-field="title">
+                        <label for="title">{{ $t('ชื่อหัวข้อ', 'Topic Title') }}</label>
+                        <input id="title" name="title" type="text" value="{{ old('title') }}" maxlength="500" data-forum-required="title">
                         @error('title')
                             <p class="form-error">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="form-field">
-                        <label for="body_html">{{ __('Message') }}</label>
+                    <div class="form-field" data-forum-field="body">
+                        <label for="body_html">{{ $t('ข้อความ', 'Message') }}</label>
                         @include('partials.tinymce-editor', [
                             'id' => 'body_html',
                             'name' => 'body_html',
-                            'label' => __('Topic Message'),
+                            'label' => $t('ข้อความหัวข้อ', 'Topic Message'),
                             'rows' => 8,
-                            'placeholder' => __('Write your new topic message here...'),
+                            'placeholder' => $t('พิมพ์ข้อความหัวข้อใหม่ที่นี่...', 'Write your new topic message here...'),
                         ])
                     </div>
 
@@ -61,7 +62,7 @@
                             @include('partials.image-uploader-v2', [
                                 'inputId' => 'topic-attachments',
                                 'maxFiles' => $maxPostImages,
-                                'hint' => __('Drag and drop or select up to :count images for this topic.', ['count' => $maxPostImages]),
+                                'hint' => $t("ลาก วาง หรือเลือกภาพได้สูงสุด {$maxPostImages} ภาพสำหรับหัวข้อนี้", "Drag and drop or select up to {$maxPostImages} images for this topic."),
                             ])
                             @error('attachments')
                                 <p class="form-error">{{ $message }}</p>
@@ -73,69 +74,26 @@
                     @endif
 
                     <div class="inline-actions">
-                        <button class="button" type="submit">{{ __('Post Topic') }}</button>
+                        <button class="button" type="submit">{{ $t('โพสต์หัวข้อ', 'Post Topic') }}</button>
                     </div>
                 </form>
             @else
-                <p class="empty-state">{{ __('Reply access starts at level 1. New topic access starts at level 3.') }}</p>
+                <p class="empty-state">{{ $t('การตอบกระทู้เริ่มต้นที่ระดับ 1 และการตั้งหัวข้อใหม่เริ่มต้นที่ระดับ 3', 'Reply access starts at level 1. New topic access starts at level 3.') }}</p>
             @endif
         @else
             <div class="inline-actions">
-                <a class="button" href="{{ route('login') }}">{{ __('Sign in to post') }}</a>
+                <a class="button" href="{{ route('login') }}">{{ $t('เข้าสู่ระบบเพื่อโพสต์', 'Sign in to post') }}</a>
             </div>
         @endauth
     </section>
 
     <section class="panel">
         <div class="panel__header">
-            <h2>{{ __('Topics') }}</h2>
-            <p>{{ __(':count archived discussions in this room.', ['count' => number_format($topics->total())]) }}</p>
+            <h2>{{ $t('หัวข้อ', 'Topics') }}</h2>
+            <p>{{ $t(number_format($topics->total()).' หัวข้อที่จัดเก็บไว้ในห้องนี้', number_format($topics->total()).' archived discussions in this room.') }}</p>
         </div>
 
         @include('partials.room-topic-table', ['topics' => $topics])
-        {{--
-            <table class="forum-table forum-topic-table">
-                <thead>
-                    <tr>
-                        <th width="48%">Topic</th>
-                        <th width="12%">Read</th>
-                        <th width="12%">Reply</th>
-                        <th width="28%">Last</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @forelse ($topics as $topic)
-                    <tr>
-                        <td>
-                            <a class="forum-topic-link" href="{{ route('topics.show', $topic) }}">
-                            @if ($topic->is_pinned)
-                                <span class="badge">Pinned</span>
-                            @endif
-                            @if ($topic->is_locked)
-                                <span class="badge badge--muted">Locked</span>
-                            @endif
-                            @if ($topic->hasPostedImage())
-                                @include('partials.camera-indicator')
-                            @endif
-                            {{ $topic->title }}
-                        </strong>
-                        <p>
-                            @include('partials.author-badge', [
-                                'user' => $topic->author,
-                                'fallback' => 'Archived member',
-                            ])
-                            · {{ number_format($topic->reply_count) }} replies
-                            · {{ number_format($topic->view_count) }} views
-                        </p>
-                    </div>
-                    <span>{{ optional($topic->last_posted_at)->format('d M Y H:i') ?: 'Archive' }}</span>
-                </a>
-            @empty
-                <p class="empty-state">No imported topics found for this room yet.</p>
-            @endforelse
-                </tbody>
-            </table>
-        --}}
 
         <div class="pagination-wrap">
             {{ $topics->links() }}
