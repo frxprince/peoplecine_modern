@@ -32,7 +32,7 @@ class RoomManagementController extends Controller
             'name_en' => ['nullable', 'string', 'max:255'],
             'name_color' => ['nullable', 'string', 'regex:/^#?[0-9A-Fa-f]{6}$/'],
             'description' => ['nullable', 'string'],
-            'access_level' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 9])],
+            'access_level' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 9, 10])],
             'sort_order' => ['required', 'integer', 'between:0,9999'],
             'is_archived' => ['nullable', 'boolean'],
         ]);
@@ -63,7 +63,7 @@ class RoomManagementController extends Controller
     public function update(Request $request, Room $room): RedirectResponse
     {
         $validated = $request->validate([
-            'access_level' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 9])],
+            'access_level' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 9, 10])],
             'sort_order' => ['required', 'integer', 'between:0,9999'],
             'is_archived' => ['nullable', 'boolean'],
         ]);

@@ -32,7 +32,7 @@
                 </a>
                 <a class="button button--ghost button--small" href="{{ route('password.edit') }}">{{ $t('เปลี่ยนรหัสผ่าน', 'Change Password') }}</a>
                 <a class="button button--ghost button--small" href="{{ route('profile.edit') }}">{{ $t('แก้ไขโปรไฟล์', 'Edit Profile') }}</a>
-                @if ($user->isAdmin())
+                @if ($user->canAccessAdminPanel())
                     <a class="button button--ghost button--small" href="{{ route('admin.users.index') }}">{{ $t('จัดการผู้ใช้', 'User Management') }}</a>
                 @endif
             </div>

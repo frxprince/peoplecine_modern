@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\AdminTestMail;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\View\View;
@@ -12,11 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Throwable;
 
 class UserManagementController extends Controller
 {
@@ -110,18 +107,20 @@ class UserManagementController extends Controller
     public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'legacy_level' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 9])],
+            'legacy_level' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 9, 10])],
             'account_status' => ['required', Rule::in(['active', 'banned', 'disabled'])],
             'role' => ['required', Rule::in(['user', 'admin'])],
         ]);
 
-        $wantsAdmin = $validated['role'] === 'admin' || (int) $validated['legacy_level'] === 9;
+        $requestedLevel = (int) $validated['legacy_level'];
+        $wantsProgrammer = $requestedLevel === 10;
+        $wantsAdmin = $validated['role'] === 'admin' || in_array($requestedLevel, [9, 10], true);
 
         $user->forceFill([
-            'legacy_level' => $wantsAdmin ? 9 : (int) $validated['legacy_level'],
+            'legacy_level' => $wantsProgrammer ? 10 : ($wantsAdmin ? 9 : $requestedLevel),
             'account_status' => $validated['account_status'],
             'role' => $wantsAdmin ? 'admin' : 'user',
-            'legacy_authorize' => $wantsAdmin ? 'Admin' : null,
+            'legacy_authorize' => $wantsProgrammer ? 'Programmer' : ($wantsAdmin ? 'Admin' : null),
         ])->save();
 
         return redirect()
@@ -144,39 +143,6 @@ class UserManagementController extends Controller
         return redirect()
             ->route('admin.users.index', $this->redirectQuery($request))
             ->with('status', "Password updated for {$user->username}.");
-    }
-
-    public function sendTestMail(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'recipient_email' => ['required', 'email'],
-            'subject_line' => ['nullable', 'string', 'max:160'],
-            'body_text' => ['nullable', 'string', 'max:4000'],
-        ]);
-
-        $subject = trim((string) ($validated['subject_line'] ?? ''));
-        $body = trim((string) ($validated['body_text'] ?? ''));
-
-        $subject = $subject !== '' ? $subject : 'PeopleCine mail test';
-        $body = $body !== ''
-            ? $body
-            : "This is a test email from the PeopleCine admin panel.\n\nSent at: ".now()->format('Y-m-d H:i:s');
-
-        try {
-            Mail::to($validated['recipient_email'])->send(
-                new AdminTestMail($subject, $body)
-            );
-        } catch (Throwable $exception) {
-            return redirect()
-                ->route('admin.users.index', $this->redirectQuery($request))
-                ->withErrors([
-                    'mail_test' => 'Unable to send test email: '.$exception->getMessage(),
-                ]);
-        }
-
-        return redirect()
-            ->route('admin.users.index', $this->redirectQuery($request))
-            ->with('status', "Test email sent to {$validated['recipient_email']}.");
     }
 
     public function destroyMany(Request $request): RedirectResponse

@@ -2,12 +2,14 @@
     'user' => null,
     'fallback' => null,
     'strong' => false,
+    'ipAddress' => null,
 ])
 
 @php
     $fallback = $fallback ?? (app()->getLocale() === 'th' ? 'สมาชิกที่ถูกเก็บเข้าคลัง' : 'Archived member');
     $name = $user?->displayName() ?? $fallback;
     $avatarUrl = $user?->avatarUrl();
+    $showIpAddress = auth()->check() && auth()->user()?->isProgrammer() && filled($ipAddress);
     $profileUrl = auth()->check() && $user !== null && auth()->user()?->canViewMemberProfiles()
         ? route('members.show', $user)
         : null;
@@ -28,6 +30,10 @@
         @else
             <span class="author-badge__name">{{ $name }}</span>
         @endif
+    @endif
+
+    @if ($showIpAddress)
+        <span class="author-badge__ip">({{ $ipAddress }})</span>
     @endif
 
     @if ($avatarUrl)

@@ -76,6 +76,6 @@ class UserProfile extends Model
         }
 
         return $viewer !== null
-            && ($viewer->isAdmin() || (int) $viewer->getKey() === (int) $this->user_id);
+            && ($viewer->canAccessAdminPanel() || (int) $viewer->getKey() === (int) $this->user_id);
     }
 }

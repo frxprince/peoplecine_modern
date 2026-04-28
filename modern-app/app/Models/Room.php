@@ -145,6 +145,7 @@ class Room extends Model
             3 => $locale === 'th' ? 'ระดับ 3 ตั้งหัวข้อได้เต็มรูปแบบ' : 'Level 3 full posting access',
             4 => $locale === 'th' ? 'ระดับ 4 ห้อง VIP' : 'Level 4 VIP access',
             9 => $locale === 'th' ? 'ระดับ 9 เฉพาะผู้ดูแลระบบ' : 'Level 9 admin only',
+            10 => $locale === 'th' ? 'ระดับ 10 เฉพาะโปรแกรมเมอร์' : 'Level 10 programmer only',
             default => $locale === 'th'
                 ? 'ระดับ '.(int) $this->access_level
                 : 'Level '.(int) $this->access_level,

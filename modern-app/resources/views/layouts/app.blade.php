@@ -57,6 +57,12 @@
                 </div>
             </div>
 
+            @if (session('header_error'))
+                <div class="legacy-header__alert" role="status">
+                    {{ session('header_error') }}
+                </div>
+            @endif
+
             <nav class="legacy-topnav">
                 <a href="{{ route('home') }}">{{ __('Main Forum') }}</a>
                 <a href="{{ route('projector-manual.index') }}">{{ $projectorManualLabel }}</a>
@@ -78,7 +84,7 @@
                     </a>
                     <a href="{{ route('profile.edit') }}">{{ __('Profile') }}</a>
                     <a href="{{ route('password.edit') }}">{{ $changePasswordLabel }}</a>
-                    @if (auth()->user()?->isAdmin())
+                    @if (auth()->user()?->canAccessAdminPanel())
                         <details class="legacy-topnav__group">
                             <summary>{{ __('Admin') }}</summary>
                             <div class="legacy-topnav__submenu">
@@ -86,6 +92,15 @@
                                 <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
                                 <a href="{{ route('admin.banners.index') }}">{{ $bannerAdminLabel }}</a>
                                 <a href="{{ route('admin.manual.index') }}">{{ $currentLocale === 'th' ? 'คู่มือผู้ดูแลระบบ' : 'Admin Manual' }}</a>
+                            </div>
+                        </details>
+                    @endif
+                    @if (auth()->user()?->isProgrammer())
+                        <details class="legacy-topnav__group">
+                            <summary>{{ $currentLocale === 'th' ? 'ดีบัก' : 'Debug' }}</summary>
+                            <div class="legacy-topnav__submenu">
+                                <a href="{{ route('debug.index') }}">{{ $currentLocale === 'th' ? 'ทดสอบอีเมล' : 'Mail Test' }}</a>
+                                <a href="{{ route('debug.statistics') }}">{{ $currentLocale === 'th' ? 'สถิติ' : 'Statistics' }}</a>
                             </div>
                         </details>
                     @endif
@@ -175,7 +190,7 @@
                             @endif
                         </a>
                         <a href="{{ route('profile.edit') }}">{{ __('Personal Info') }}</a>
-                        @if (auth()->user()?->isAdmin())
+                        @if (auth()->user()?->canAccessAdminPanel())
                             <details class="legacy-menu__group">
                                 <summary>{{ __('Admin') }}</summary>
                                 <div class="legacy-menu__submenu">
@@ -183,6 +198,15 @@
                                     <a href="{{ route('admin.rooms.index') }}">{{ __('Room Admin') }}</a>
                                     <a href="{{ route('admin.banners.index') }}">{{ $bannerAdminLabel }}</a>
                                     <a href="{{ route('admin.manual.index') }}">{{ $currentLocale === 'th' ? 'คู่มือผู้ดูแลระบบ' : 'Admin Manual' }}</a>
+                                </div>
+                            </details>
+                        @endif
+                        @if (auth()->user()?->isProgrammer())
+                            <details class="legacy-menu__group">
+                                <summary>{{ $currentLocale === 'th' ? 'ดีบัก' : 'Debug' }}</summary>
+                                <div class="legacy-menu__submenu">
+                                    <a href="{{ route('debug.index') }}">{{ $currentLocale === 'th' ? 'ทดสอบอีเมล' : 'Mail Test' }}</a>
+                                    <a href="{{ route('debug.statistics') }}">{{ $currentLocale === 'th' ? 'สถิติ' : 'Statistics' }}</a>
                                 </div>
                             </details>
                         @endif

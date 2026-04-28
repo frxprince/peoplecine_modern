@@ -93,7 +93,7 @@ class Post extends Model
     public function isEditableBy(?User $user): bool
     {
         return $user !== null
-            && ($user->isAdmin() || $this->isOwnedBy($user));
+            && ($user->canAccessAdminPanel() || $this->isOwnedBy($user));
     }
 
     public function isTopicStarter(): bool

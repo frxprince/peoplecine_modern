@@ -6,11 +6,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureUserIsAdmin
+class EnsureUserIsProgrammer
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->canAccessAdminPanel(), 403);
+        abort_unless($request->user()?->isProgrammer(), 403);
 
         return $next($request);
     }

@@ -45,7 +45,7 @@
                 <div class="form-field">
                     <label for="room_access_level">{{ __('Access Level') }}</label>
                     <select id="room_access_level" name="access_level">
-                        @foreach ([0, 1, 2, 3, 4, 9] as $level)
+                        @foreach ([0, 1, 2, 3, 4, 9, 10] as $level)
                             <option value="{{ $level }}" @selected((int) old('access_level', 0) === $level)>
                                 {{ match($level) {
                                     0 => __('0 Read All'),
@@ -54,6 +54,7 @@
                                     3 => __('3 Full Post'),
                                     4 => __('4 VIP'),
                                     9 => __('9 Admin Only'),
+                                    10 => __('10 Programmer Only'),
                                 } }}
                             </option>
                         @endforeach
@@ -121,7 +122,7 @@
                             <td class="forum-table__number">{{ number_format($room->topics_count) }}</td>
                             <td class="admin-user-table__cell-control">
                                 <select name="access_level" form="{{ $formId }}">
-                                    @foreach ([0, 1, 2, 3, 4, 9] as $level)
+                                    @foreach ([0, 1, 2, 3, 4, 9, 10] as $level)
                                         <option value="{{ $level }}" @selected((int) $room->access_level === $level)>
                                             {{ match($level) {
                                                 0 => __('0 Read All'),
@@ -130,6 +131,7 @@
                                                 3 => __('3 Full Post'),
                                                 4 => __('4 VIP'),
                                                 9 => __('9 Admin Only'),
+                                                10 => __('10 Programmer Only'),
                                             } }}
                                         </option>
                                     @endforeach

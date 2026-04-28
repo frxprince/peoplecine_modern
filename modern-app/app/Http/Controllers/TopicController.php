@@ -61,7 +61,7 @@ class TopicController extends Controller
 
         abort_unless($topic->room?->isVisibleTo($user) ?? false, 403);
         abort_unless($user?->canReply(), 403);
-        abort_if($topic->is_locked && ! $user?->isAdmin(), 403);
+        abort_if($topic->is_locked && ! $user?->canAccessAdminPanel(), 403);
 
         $validated = $request->validate([
             'body_html' => ['nullable', 'string'],
@@ -275,7 +275,7 @@ class TopicController extends Controller
     {
         $topic->load('room');
 
-        abort_unless($request->user()?->isAdmin(), 403);
+        abort_unless($request->user()?->canAccessAdminPanel(), 403);
         abort_unless($topic->room?->isVisibleTo($request->user()) ?? false, 403);
 
         DB::transaction(function () use ($topic): void {
@@ -293,7 +293,7 @@ class TopicController extends Controller
         $topic->load('room');
 
         abort_unless((int) $post->topic_id === (int) $topic->id, 404);
-        abort_unless($request->user()?->isAdmin(), 403);
+        abort_unless($request->user()?->canAccessAdminPanel(), 403);
         abort_unless($topic->room?->isVisibleTo($request->user()) ?? false, 403);
         abort_if($post->isTopicStarter(), 403);
 
@@ -341,7 +341,7 @@ class TopicController extends Controller
     {
         $topic->load('room');
 
-        abort_unless($request->user()?->isAdmin(), 403);
+        abort_unless($request->user()?->canAccessAdminPanel(), 403);
         abort_unless($topic->room?->isVisibleTo($request->user()) ?? false, 403);
 
         $topic->forceFill([
@@ -358,7 +358,7 @@ class TopicController extends Controller
     {
         $topic->load('room');
 
-        abort_unless($request->user()?->isAdmin(), 403);
+        abort_unless($request->user()?->canAccessAdminPanel(), 403);
         abort_unless($topic->room?->isVisibleTo($request->user()) ?? false, 403);
 
         $topic->forceFill([

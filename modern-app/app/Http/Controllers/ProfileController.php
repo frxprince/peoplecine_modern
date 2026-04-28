@@ -28,7 +28,7 @@ class ProfileController extends Controller
 
     public function showFromAdmin(Request $request, \App\Models\User $user): View
     {
-        abort_unless($request->user()?->isAdmin(), 403);
+        abort_unless($request->user()?->canAccessAdminPanel(), 403);
 
         return view('profile.show', [
             'title' => $this->label(

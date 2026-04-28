@@ -48,7 +48,7 @@
                 </form>
             @endif
 
-            @if (auth()->user()->isAdmin())
+            @if (auth()->user()->canAccessAdminPanel())
                     @if ($topic->is_pinned)
                         <form method="POST" action="{{ route('topics.unpin', $topic) }}">
                             @csrf
@@ -88,6 +88,7 @@
                             'user' => $post->author,
                             'fallback' => $t('สมาชิกที่ถูกเก็บเข้าคลัง', 'Archived member'),
                             'strong' => true,
+                            'ipAddress' => $post->ip_address,
                         ])
                     <span>#{{ $post->position_in_topic }}</span>
                     <span>{{ optional($post->created_at)->format('d M Y H:i') ?: $t('คลังข้อมูล', 'Archive') }}</span>
@@ -215,7 +216,7 @@
                                 </div>
                             </details>
                         @endif
-                        @if (auth()->user()->isAdmin() && ! $post->isTopicStarter())
+                        @if (auth()->user()->canAccessAdminPanel() && ! $post->isTopicStarter())
                             <form method="POST" action="{{ route('topics.posts.destroy', [$topic, $post]) }}" onsubmit="return confirm(@js(__('Delete this reply?')));">
                                 @csrf
                                 @method('DELETE')
@@ -276,7 +277,7 @@
             <h2>{{ $t('ตอบกระทู้', 'Post Reply') }}</h2>
             @auth
                 <p>
-                    @if ($topic->is_locked && ! auth()->user()->isAdmin())
+                    @if ($topic->is_locked && ! auth()->user()->canAccessAdminPanel())
                         {{ $t('หัวข้อนี้ถูกล็อกและไม่สามารถรับข้อความตอบใหม่ได้', 'This topic is locked and cannot accept new replies.') }}
                     @elseif (auth()->user()->canReply())
                         {{ $t('เพิ่มข้อความตอบของคุณในกระทู้นี้', 'Add your reply to this discussion.') }}
@@ -290,7 +291,7 @@
         </div>
 
         @auth
-            @if ($topic->is_locked && ! auth()->user()->isAdmin())
+            @if ($topic->is_locked && ! auth()->user()->canAccessAdminPanel())
                 <p class="empty-state">{{ $t('หัวข้อนี้ถูกล็อก', 'This topic is locked.') }}</p>
             @elseif (auth()->user()->canReply())
                 <form class="form-stack" method="POST" action="{{ route('topics.replies.store', $topic) }}" enctype="multipart/form-data" data-forum-validate data-require-body-or-image="true" data-error-body-or-image-required="{{ $t('กรุณาใส่ข้อความตอบหรืออัปโหลดรูปภาพอย่างน้อย 1 รูปก่อนโพสต์', 'Please enter a reply message or upload at least one image before posting.') }}" novalidate>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Admin\AdminManualController;
 use App\Http\Controllers\Admin\BannerManagementController;
+use App\Http\Controllers\Admin\DebugController;
 use App\Http\Controllers\Admin\RoomManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\ArticleController;
@@ -106,13 +107,18 @@ Route::middleware(['auth', 'password.reset.completed'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 });
 
+Route::middleware(['auth', 'password.reset.completed', 'programmer'])->prefix('debug')->name('debug.')->group(function () {
+    Route::get('/', [DebugController::class, 'index'])->name('index');
+    Route::get('/statistics', [DebugController::class, 'statistics'])->name('statistics');
+    Route::post('/mail-test', [DebugController::class, 'sendTestMail'])->name('mail-test');
+});
+
 Route::middleware(['auth', 'password.reset.completed', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/manual', [AdminManualController::class, 'index'])->name('manual.index');
     Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
     Route::get('/users/{user}/profile', [ProfileController::class, 'showFromAdmin'])->name('users.profile');
     Route::put('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
     Route::put('/users/{user}/password', [UserManagementController::class, 'updatePassword'])->name('users.password.update');
-    Route::post('/users/mail-test', [UserManagementController::class, 'sendTestMail'])->name('users.mail-test');
     Route::delete('/users', [UserManagementController::class, 'destroyMany'])->name('users.destroy-many');
     Route::get('/rooms', [RoomManagementController::class, 'index'])->name('rooms.index');
     Route::post('/rooms', [RoomManagementController::class, 'store'])->name('rooms.store');

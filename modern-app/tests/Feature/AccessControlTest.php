@@ -126,7 +126,7 @@ class AccessControlTest extends TestCase
             ->assertSee('member-user');
 
         $updateResponse = $this->actingAs($admin)->put(route('admin.users.update', $member), [
-            'legacy_level' => 9,
+            'legacy_level' => 10,
             'account_status' => 'banned',
             'role' => 'admin',
         ]);
@@ -138,9 +138,10 @@ class AccessControlTest extends TestCase
         ]));
 
         $member->refresh();
-        $this->assertSame(9, $member->memberLevel());
+        $this->assertSame(10, $member->memberLevel());
         $this->assertSame('banned', $member->account_status);
-        $this->assertTrue($member->isAdmin());
+        $this->assertTrue($member->isProgrammer());
+        $this->assertTrue($member->canAccessAdminPanel());
     }
 
     public function test_admin_user_table_shows_address_phone_and_click_columns(): void
@@ -229,7 +230,7 @@ class AccessControlTest extends TestCase
         $this->assertFalse($member->requiresPasswordReset());
     }
 
-    public function test_admin_can_send_test_email_and_non_admin_cannot(): void
+    public function test_programmer_can_send_test_email_from_debug_and_admin_cannot(): void
     {
         Mail::fake();
 
@@ -247,6 +248,20 @@ class AccessControlTest extends TestCase
             'display_name' => 'Admin Mail',
         ]);
 
+        $programmer = User::query()->create([
+            'username' => 'programmer-mail',
+            'email' => 'programmer-mail@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 10,
+            'legacy_authorize' => 'Programmer',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $programmer->id,
+            'display_name' => 'Programmer Mail',
+        ]);
+
         $member = User::query()->create([
             'username' => 'member-mail',
             'email' => 'member-mail@example.com',
@@ -260,20 +275,33 @@ class AccessControlTest extends TestCase
             'display_name' => 'Member Mail',
         ]);
 
-        $this->actingAs($member)->post(route('admin.users.mail-test'), [
+        $this->actingAs($member)->get(route('debug.index'))->assertForbidden();
+        $this->actingAs($member)->post(route('debug.mail-test'), [
             'recipient_email' => 'recipient@example.com',
             'subject_line' => 'Forbidden test',
             'body_text' => 'Forbidden body',
         ])->assertForbidden();
 
-        $response = $this->actingAs($admin)->post(route('admin.users.mail-test'), [
+        $this->actingAs($admin)->get(route('debug.index'))->assertForbidden();
+        $this->actingAs($admin)->post(route('debug.mail-test'), [
+            'recipient_email' => 'recipient@example.com',
+            'subject_line' => 'Forbidden test',
+            'body_text' => 'Forbidden body',
+        ])->assertForbidden();
+
+        $this->actingAs($programmer)->get(route('debug.index'))
+            ->assertOk()
+            ->assertSee(route('debug.mail-test'), false)
+            ->assertSee('name="recipient_email"', false);
+
+        $response = $this->actingAs($programmer)->post(route('debug.mail-test'), [
             'recipient_email' => 'recipient@example.com',
             'subject_line' => 'Admin test message',
             'body_text' => 'Mail body from the admin page.',
         ]);
 
         $response->assertStatus(302);
-        $this->assertStringContainsString('/admin/users', (string) $response->headers->get('Location'));
+        $this->assertStringContainsString('/debug', (string) $response->headers->get('Location'));
 
         Mail::assertSent(\App\Mail\AdminTestMail::class, function ($mail) {
             return $mail->hasTo('recipient@example.com')
@@ -337,7 +365,7 @@ class AccessControlTest extends TestCase
             ->assertSee('Admin Room Config');
 
         $response = $this->actingAs($admin)->put(route('admin.rooms.update', $room), [
-            'access_level' => 9,
+            'access_level' => 10,
             'sort_order' => 9,
             'is_archived' => 1,
         ]);
@@ -345,7 +373,7 @@ class AccessControlTest extends TestCase
         $response->assertRedirect(route('admin.rooms.index'));
 
         $room->refresh();
-        $this->assertSame(9, (int) $room->access_level);
+        $this->assertSame(10, (int) $room->access_level);
         $this->assertSame(9, (int) $room->sort_order);
         $this->assertTrue($room->is_archived);
 
@@ -355,7 +383,7 @@ class AccessControlTest extends TestCase
             'name_en' => 'New Admin Room EN',
             'name_color' => '#FF00FF',
             'description' => 'Created from the admin room config page.',
-            'access_level' => 9,
+            'access_level' => 10,
             'sort_order' => 15,
             'is_archived' => 0,
         ]);
@@ -367,13 +395,60 @@ class AccessControlTest extends TestCase
             'name' => 'New Admin Room',
             'name_en' => 'New Admin Room EN',
             'name_color' => '#FF00FF',
-            'access_level' => 9,
+            'access_level' => 10,
             'sort_order' => 15,
             'is_archived' => false,
         ]);
 
         $this->actingAs($member)->get(route('rooms.show', $room))->assertForbidden();
         $this->actingAs($admin)->get(route('rooms.show', $room))->assertOk();
+    }
+
+    public function test_programmer_can_open_admin_screens_but_regular_admin_only_sees_admin_group(): void
+    {
+        $programmer = User::query()->create([
+            'username' => 'programmer-admin',
+            'email' => 'programmer-admin@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 10,
+            'legacy_authorize' => 'Programmer',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $programmer->id,
+            'display_name' => 'Programmer Admin',
+        ]);
+
+        $regularAdmin = User::query()->create([
+            'username' => 'regular-admin',
+            'email' => 'regular-admin@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 9,
+            'legacy_authorize' => 'Admin',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $regularAdmin->id,
+            'display_name' => 'Regular Admin',
+        ]);
+
+        $this->actingAs($programmer)->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee(route('admin.users.index'), false);
+
+        $this->actingAs($programmer)->get(route('admin.rooms.index'))
+            ->assertOk()
+            ->assertSee(route('admin.rooms.index'), false);
+
+        $this->actingAs($programmer)->get(route('home'))
+            ->assertOk()
+            ->assertSee(route('debug.index'), false);
+
+        $this->actingAs($regularAdmin)->get(route('home'))
+            ->assertOk()
+            ->assertDontSee(route('debug.index'), false);
     }
 
     public function test_admin_can_bulk_delete_selected_users_but_not_self(): void
@@ -935,5 +1010,111 @@ class AccessControlTest extends TestCase
         $adminTableResponse->assertSee(route('admin.users.profile', $poster), false);
         $adminTableResponse->assertSee('55 Secret Street 50000');
         $adminTableResponse->assertSee('hidden-address@example.com');
+    }
+
+    public function test_only_programmer_can_see_post_ip_addresses_on_topic_page(): void
+    {
+        $room = Room::query()->create([
+            'slug' => 'ip-room',
+            'name' => 'IP Room',
+            'access_level' => 0,
+            'sort_order' => 1,
+            'is_archived' => false,
+        ]);
+
+        $author = User::query()->create([
+            'username' => 'topic-author',
+            'email' => 'topic-author@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 3,
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $author->id,
+            'display_name' => 'Topic Author',
+        ]);
+
+        $programmer = User::query()->create([
+            'username' => 'ip-programmer',
+            'email' => 'ip-programmer@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 10,
+            'legacy_authorize' => 'Programmer',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $programmer->id,
+            'display_name' => 'IP Programmer',
+        ]);
+
+        $admin = User::query()->create([
+            'username' => 'ip-admin',
+            'email' => 'ip-admin@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'admin',
+            'account_status' => 'active',
+            'legacy_level' => 9,
+            'legacy_authorize' => 'Admin',
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $admin->id,
+            'display_name' => 'IP Admin',
+        ]);
+
+        $member = User::query()->create([
+            'username' => 'ip-member',
+            'email' => 'ip-member@example.com',
+            'password' => Hash::make('secret'),
+            'role' => 'user',
+            'account_status' => 'active',
+            'legacy_level' => 1,
+        ]);
+        UserProfile::query()->create([
+            'user_id' => $member->id,
+            'display_name' => 'IP Member',
+        ]);
+
+        $topic = Topic::query()->create([
+            'room_id' => $room->id,
+            'author_id' => $author->id,
+            'title' => 'IP visibility topic',
+            'visibility_level' => 0,
+            'is_pinned' => false,
+            'is_locked' => false,
+            'view_count' => 0,
+            'reply_count' => 0,
+            'last_posted_at' => now(),
+        ]);
+
+        $post = \App\Models\Post::query()->create([
+            'topic_id' => $topic->id,
+            'author_id' => $author->id,
+            'legacy_source_table' => 'modern_topic',
+            'legacy_source_id' => 50001,
+            'position_in_topic' => 1,
+            'body_html' => '<p>Hello</p>',
+            'ip_address' => '203.0.113.50',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $topic->forceFill([
+            'first_post_id' => $post->id,
+            'last_post_id' => $post->id,
+        ])->save();
+
+        $this->actingAs($programmer)->get(route('topics.show', $topic))
+            ->assertOk()
+            ->assertSee('(203.0.113.50)');
+
+        $this->actingAs($admin)->get(route('topics.show', $topic))
+            ->assertOk()
+            ->assertDontSee('(203.0.113.50)');
+
+        $this->actingAs($member)->get(route('topics.show', $topic))
+            ->assertOk()
+            ->assertDontSee('(203.0.113.50)');
     }
 }

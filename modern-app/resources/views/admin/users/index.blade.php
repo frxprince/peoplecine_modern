@@ -4,10 +4,6 @@
     @php
         $isThaiUi = app()->getLocale() === 'th';
         $clicksColumnLabel = $isThaiUi ? 'คลิก' : 'Clicks';
-        $mailTestLabel = $isThaiUi ? 'ทดสอบอีเมล' : 'Mail Test';
-        $mailTestHelp = $isThaiUi
-            ? 'ส่งอีเมลทดสอบจากค่าตั้งค่าเมลของ Laravel ตอนนี้'
-            : 'Send a small test email from the current Laravel mail configuration.';
         $defaultDirections = [
             'id' => 'asc',
             'user' => 'asc',
@@ -47,67 +43,6 @@
         <div class="inline-actions">
             <a class="button button--ghost button--small" href="{{ route('admin.rooms.index') }}">{{ __('Manage Rooms') }}</a>
         </div>
-    </section>
-
-    <section class="panel">
-        <details class="admin-user-password-box" @if ($errors->hasAny(['mail_test', 'recipient_email', 'subject_line', 'body_text'])) open @endif>
-            <summary class="admin-user-password-box__summary">{{ $mailTestLabel }}</summary>
-            <div class="panel__header">
-                <p>{{ $mailTestHelp }}</p>
-            </div>
-
-            <form class="admin-search-form" method="POST" action="{{ route('admin.users.mail-test', $queryState) }}">
-                @csrf
-                <input name="page" type="hidden" value="{{ $users->currentPage() }}">
-                <input name="sort" type="hidden" value="{{ $currentSort }}">
-                <input name="direction" type="hidden" value="{{ $currentDirection }}">
-                <input name="search" type="hidden" value="{{ $currentSearch }}">
-
-                <label class="admin-search-form__label" for="mail-test-recipient">{{ __('Recipient email') }}</label>
-                <input
-                    id="mail-test-recipient"
-                    class="admin-search-form__input"
-                    name="recipient_email"
-                    type="email"
-                    value="{{ old('recipient_email') }}"
-                    placeholder="peoplecine@drpaween.com"
-                    required
-                >
-
-                <label class="admin-search-form__label" for="mail-test-subject">{{ __('Subject') }}</label>
-                <input
-                    id="mail-test-subject"
-                    class="admin-search-form__input"
-                    name="subject_line"
-                    type="text"
-                    value="{{ old('subject_line', 'PeopleCine mail test') }}"
-                    maxlength="160"
-                >
-
-                <label class="admin-search-form__label" for="mail-test-body">{{ __('Message') }}</label>
-                <textarea
-                    id="mail-test-body"
-                    class="admin-search-form__input"
-                    name="body_text"
-                    rows="4"
-                >{{ old('body_text', "This is a test email from the PeopleCine admin panel.") }}</textarea>
-
-                <button class="button button--small" type="submit">{{ __('Send Test Email') }}</button>
-            </form>
-
-            @error('mail_test')
-                <p class="form-error">{{ $message }}</p>
-            @enderror
-            @error('recipient_email')
-                <p class="form-error">{{ $message }}</p>
-            @enderror
-            @error('subject_line')
-                <p class="form-error">{{ $message }}</p>
-            @enderror
-            @error('body_text')
-                <p class="form-error">{{ $message }}</p>
-            @enderror
-        </details>
     </section>
 
     <section class="panel">
@@ -307,11 +242,15 @@
                             <td class="admin-user-table__id">{{ number_format((int) ($managedUser->visit_count ?? 0)) }}</td>
                             <td class="admin-user-table__cell-control">
                                 <select name="legacy_level" form="{{ $formId }}">
-                                    @foreach ([0, 1, 2, 3, 4, 9] as $level)
-                                        <option value="{{ $level }}" @selected($managedUser->memberLevel() === $level)>
-                                            {{ $level === 9 ? __('Level 9 Admin') : __('Level :level', ['level' => $level]) }}
-                                        </option>
-                                    @endforeach
+                                @foreach ([0, 1, 2, 3, 4, 9, 10] as $level)
+                                    <option value="{{ $level }}" @selected($managedUser->memberLevel() === $level)>
+                                        {{ match($level) {
+                                            9 => __('Level 9 Admin'),
+                                            10 => __('Level 10 Programmer'),
+                                            default => __('Level :level', ['level' => $level]),
+                                        } }}
+                                    </option>
+                                @endforeach
                                 </select>
                             </td>
                             <td class="admin-user-table__cell-control">

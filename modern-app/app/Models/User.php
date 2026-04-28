@@ -118,6 +118,7 @@ class User extends Authenticatable
     public function memberLevelLabel(): string
     {
         return match (true) {
+            $this->isProgrammer() => __('Level 10 Programmer'),
             $this->isAdmin() => __('Admin'),
             $this->memberLevel() >= 4 => __('Level 4 VIP'),
             $this->memberLevel() === 3 => __('Level 3 Topic Starter'),
@@ -132,6 +133,17 @@ class User extends Authenticatable
         return $this->role === 'admin'
             || $this->legacy_authorize === 'Admin'
             || $this->memberLevel() === 9;
+    }
+
+    public function isProgrammer(): bool
+    {
+        return $this->legacy_authorize === 'Programmer'
+            || $this->memberLevel() === 10;
+    }
+
+    public function canAccessAdminPanel(): bool
+    {
+        return $this->isAdmin() || $this->isProgrammer();
     }
 
     public function isBanned(): bool
@@ -185,32 +197,32 @@ class User extends Authenticatable
 
     public function canReply(): bool
     {
-        return $this->isAdmin() || $this->memberLevel() >= 1;
+        return $this->canAccessAdminPanel() || $this->memberLevel() >= 1;
     }
 
     public function canCreateTopic(): bool
     {
-        return $this->isAdmin() || $this->memberLevel() >= 3;
+        return $this->canAccessAdminPanel() || $this->memberLevel() >= 3;
     }
 
     public function canUploadImages(): bool
     {
-        return $this->isAdmin() || $this->memberLevel() >= 3;
+        return $this->canAccessAdminPanel() || $this->memberLevel() >= 3;
     }
 
     public function canAccessVipRoom(): bool
     {
-        return $this->isAdmin() || $this->memberLevel() >= 4;
+        return $this->canAccessAdminPanel() || $this->memberLevel() >= 4;
     }
 
     public function canViewMemberProfiles(): bool
     {
-        return $this->isAdmin() || $this->memberLevel() >= 3;
+        return $this->canAccessAdminPanel() || $this->memberLevel() >= 3;
     }
 
     public function effectiveRoomAccessLevel(): int
     {
-        return $this->isAdmin()
+        return $this->canAccessAdminPanel()
             ? PHP_INT_MAX
             : $this->memberLevel();
     }
