@@ -63,6 +63,41 @@ document.addEventListener('DOMContentLoaded', () => {
         lastModified: Date.now(),
     });
 
+    const inferExtensionFromType = (type) => {
+        switch (type) {
+            case 'image/jpeg':
+                return 'jpg';
+            case 'image/png':
+                return 'png';
+            case 'image/webp':
+                return 'webp';
+            case 'image/gif':
+                return 'gif';
+            case 'image/bmp':
+                return 'bmp';
+            default:
+                return 'png';
+        }
+    };
+
+    const normalizeIncomingFile = (file) => {
+        if (!(file instanceof File)) {
+            return null;
+        }
+
+        if (file.name && file.name.trim() !== '') {
+            return file;
+        }
+
+        const extension = inferExtensionFromType(file.type);
+        const generatedName = `pasted-image-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+
+        return new File([file], generatedName, {
+            type: file.type,
+            lastModified: Date.now(),
+        });
+    };
+
     const loadImage = (file) => new Promise((resolve, reject) => {
         const imageUrl = URL.createObjectURL(file);
         const image = new Image();
@@ -492,11 +527,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const addFiles = (incomingFiles) => {
             Array.from(incomingFiles).forEach((file) => {
-                if (!(file instanceof File) || !file.type.startsWith('image/')) {
+                const normalizedFile = normalizeIncomingFile(file);
+
+                if (!(normalizedFile instanceof File) || !normalizedFile.type.startsWith('image/')) {
                     return;
                 }
 
-                if (items.some((item) => item.key === fileKey(file))) {
+                if (items.some((item) => item.key === fileKey(normalizedFile))) {
                     return;
                 }
 
@@ -505,8 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const item = {
-                    key: fileKey(file),
-                    file,
+                    key: fileKey(normalizedFile),
+                    file: normalizedFile,
                     status: 'queued',
                     progress: 0,
                     token: null,
@@ -522,6 +559,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 render();
                 queueUpload(item);
             });
+        };
+
+        uploader.peoplecineAddStagedFiles = (incomingFiles) => {
+            addFiles(incomingFiles);
+        };
+
+        const extractPastedImages = (event) => {
+            const clipboardData = event.clipboardData;
+
+            if (!clipboardData) {
+                return [];
+            }
+
+            if (clipboardData.files && clipboardData.files.length > 0) {
+                return Array.from(clipboardData.files).filter((file) => file.type.startsWith('image/'));
+            }
+
+            const itemsFromClipboard = clipboardData.items ? Array.from(clipboardData.items) : [];
+
+            return itemsFromClipboard
+                .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+                .map((item) => item.getAsFile())
+                .filter((file) => file instanceof File);
         };
 
         form.addEventListener('submit', (event) => {
@@ -575,6 +635,27 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedFiles.length > 0) {
                 addFiles(selectedFiles);
             }
+        });
+
+        form.addEventListener('paste', (event) => {
+            const pastedImages = extractPastedImages(event);
+
+            if (pastedImages.length === 0) {
+                return;
+            }
+
+            event.preventDefault();
+            addFiles(pastedImages);
+        });
+
+        form.addEventListener('peoplecine:add-staged-files', (event) => {
+            const pastedFiles = event?.detail?.files;
+
+            if (!Array.isArray(pastedFiles) || pastedFiles.length === 0) {
+                return;
+            }
+
+            addFiles(pastedFiles);
         });
 
         render();

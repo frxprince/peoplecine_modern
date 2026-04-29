@@ -3,6 +3,86 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    const extractClipboardImages = (event) => {
+        const clipboardData = event?.clipboardData
+            ?? event?.originalEvent?.clipboardData
+            ?? event?.raw?.clipboardData
+            ?? null;
+
+        if (!clipboardData) {
+            return [];
+        }
+
+        if (clipboardData.files && clipboardData.files.length > 0) {
+            return Array.from(clipboardData.files).filter((file) => file.type.startsWith('image/'));
+        }
+
+        if (!clipboardData.items || clipboardData.items.length === 0) {
+            return [];
+        }
+
+        return Array.from(clipboardData.items)
+            .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+            .map((item) => item.getAsFile())
+            .filter((file) => file instanceof File);
+    };
+
+    const dataUrlToFile = (dataUrl) => {
+        if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
+            return null;
+        }
+
+        const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+        if (!match) {
+            return null;
+        }
+
+        const mimeType = match[1];
+        const base64Data = match[2];
+
+        try {
+            const binary = window.atob(base64Data);
+            const bytes = new Uint8Array(binary.length);
+
+            for (let index = 0; index < binary.length; index += 1) {
+                bytes[index] = binary.charCodeAt(index);
+            }
+
+            const extension = mimeType.split('/')[1] || 'png';
+            const fileName = `pasted-image-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+
+            return new File([bytes], fileName, {
+                type: mimeType,
+                lastModified: Date.now(),
+            });
+        } catch (error) {
+            return null;
+        }
+    };
+
+    const queueImagesIntoUploader = (form, files) => {
+        if (!form || !Array.isArray(files) || files.length === 0) {
+            return false;
+        }
+
+        const uploader = form.querySelector('[data-staged-uploader]');
+        if (!(uploader instanceof HTMLElement)) {
+            return false;
+        }
+
+        const uploaderAddFiles = uploader.peoplecineAddStagedFiles;
+        if (typeof uploaderAddFiles === 'function') {
+            uploaderAddFiles(files);
+            return true;
+        }
+
+        form.dispatchEvent(new CustomEvent('peoplecine:add-staged-files', {
+            detail: { files },
+        }));
+
+        return true;
+    };
+
     const editors = Array.from(document.querySelectorAll('[data-tinymce-textarea]'))
         .filter((element) => element instanceof HTMLTextAreaElement);
 
@@ -48,6 +128,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 editor.on('init', () => {
                     const container = editor.getContainer();
                     container?.setAttribute('aria-label', label);
+                });
+
+                editor.on('paste', (event) => {
+                    const pastedImages = extractClipboardImages(event);
+
+                    if (pastedImages.length === 0 || !form) {
+                        return;
+                    }
+
+                    if (!queueImagesIntoUploader(form, pastedImages)) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                });
+
+                editor.on('PastePostProcess', (event) => {
+                    if (!form || !(event?.node instanceof Element)) {
+                        return;
+                    }
+
+                    const dataImageNodes = Array.from(
+                        event.node.querySelectorAll('img[src^="data:image/"]'),
+                    );
+
+                    if (dataImageNodes.length === 0) {
+                        return;
+                    }
+
+                    const files = dataImageNodes
+                        .map((imageNode) => dataUrlToFile(imageNode.getAttribute('src') ?? ''))
+                        .filter((file) => file instanceof File);
+
+                    if (files.length === 0) {
+                        return;
+                    }
+
+                    if (!queueImagesIntoUploader(form, files)) {
+                        return;
+                    }
+
+                    dataImageNodes.forEach((imageNode) => imageNode.remove());
                 });
             },
         });
