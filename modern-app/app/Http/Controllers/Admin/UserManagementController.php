@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -22,6 +23,8 @@ class UserManagementController extends Controller
         $sort = (string) $request->query('sort', 'id');
         $direction = strtolower((string) $request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
         $search = trim((string) $request->query('search', ''));
+        $hasLastVisitedAtColumn = Schema::hasColumn('users', 'last_visited_at');
+        $hasRecentVisitorsTable = Schema::hasTable('recent_visitors');
 
         $sortableColumns = [
             'id' => static function (Builder $query, string $direction): void {
@@ -50,11 +53,53 @@ class UserManagementController extends Controller
             },
         ];
 
+        $sortableColumns['last_visited_at'] = static function (Builder $query, string $direction) use ($hasLastVisitedAtColumn, $hasRecentVisitorsTable): void {
+            if ($hasLastVisitedAtColumn && $hasRecentVisitorsTable) {
+                $query
+                    ->orderByRaw('COALESCE(users.last_visited_at, recent_visitors_last_seen.recent_last_visited_at) IS NULL')
+                    ->orderByRaw("COALESCE(users.last_visited_at, recent_visitors_last_seen.recent_last_visited_at) {$direction}");
+
+                return;
+            }
+
+            if ($hasLastVisitedAtColumn) {
+                $query
+                    ->orderByRaw('users.last_visited_at IS NULL')
+                    ->orderBy('users.last_visited_at', $direction);
+
+                return;
+            }
+
+            if ($hasRecentVisitorsTable) {
+                $query
+                    ->orderByRaw('recent_visitors_last_seen.recent_last_visited_at IS NULL')
+                    ->orderBy('recent_visitors_last_seen.recent_last_visited_at', $direction);
+            }
+        };
+
         if (! array_key_exists($sort, $sortableColumns)) {
             $sort = 'id';
         }
 
         $usersQuery = User::query()->with('profile');
+
+        if ($hasRecentVisitorsTable) {
+            $recentVisitors = DB::table('recent_visitors')
+                ->select('user_id', DB::raw('MAX(last_visited_at) as recent_last_visited_at'))
+                ->whereNotNull('user_id')
+                ->groupBy('user_id');
+
+            $usersQuery
+                ->leftJoinSub($recentVisitors, 'recent_visitors_last_seen', static function ($join): void {
+                    $join->on('recent_visitors_last_seen.user_id', '=', 'users.id');
+                })
+                ->select('users.*')
+                ->selectRaw(
+                    $hasLastVisitedAtColumn
+                        ? 'COALESCE(users.last_visited_at, recent_visitors_last_seen.recent_last_visited_at) as effective_last_visited_at'
+                        : 'recent_visitors_last_seen.recent_last_visited_at as effective_last_visited_at'
+                );
+        }
 
         if ($search !== '') {
             $usersQuery->where(function (Builder $query) use ($search): void {
@@ -81,6 +126,8 @@ class UserManagementController extends Controller
                 ->orderBy('username'),
             'visit_count' => $usersQuery
                 ->orderBy('username'),
+            'last_visited_at' => $usersQuery
+                ->orderBy('username'),
             'legacy_level' => $usersQuery
                 ->orderBy('username'),
             'account_status' => $usersQuery
@@ -101,6 +148,8 @@ class UserManagementController extends Controller
             'currentSort' => $sort,
             'currentDirection' => $direction,
             'currentSearch' => $search,
+            'hasLastVisitedAtColumn' => $hasLastVisitedAtColumn,
+            'hasRecentVisitorsTable' => $hasRecentVisitorsTable,
         ]);
     }
 

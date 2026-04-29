@@ -2,13 +2,14 @@
 
 @section('content')
     @php
-        $isThaiUi = app()->getLocale() === 'th';
-        $clicksColumnLabel = $isThaiUi ? 'คลิก' : 'Clicks';
+        $clicksColumnLabel = __('Clicks');
+        $lastVisitColumnLabel = __('Last visit');
         $defaultDirections = [
             'id' => 'asc',
             'user' => 'asc',
             'email' => 'asc',
             'visit_count' => 'desc',
+            'last_visited_at' => 'desc',
             'legacy_level' => 'desc',
             'account_status' => 'asc',
             'role' => 'desc',
@@ -161,6 +162,18 @@
                             </a>
                         </th>
                         <th>
+                            <a class="admin-user-table__sort" href="{{ $sortLink('last_visited_at') }}">
+                                {{ $lastVisitColumnLabel }}
+                                <span class="admin-user-table__sort-indicator">
+                                    @if ($currentSort === 'last_visited_at')
+                                        {{ $currentDirection === 'asc' ? '^' : 'v' }}
+                                    @else
+                                        +/-
+                                    @endif
+                                </span>
+                            </a>
+                        </th>
+                        <th>
                             <a class="admin-user-table__sort" href="{{ $sortLink('legacy_level') }}">
                                 {{ __('Level') }}
                                 <span class="admin-user-table__sort-indicator">
@@ -240,6 +253,12 @@
                                 {{ $managedUser->profile?->phone ?: __('Not available') }}
                             </td>
                             <td class="admin-user-table__id">{{ number_format((int) ($managedUser->visit_count ?? 0)) }}</td>
+                            <td class="admin-user-table__id">
+                                @php($effectiveLastVisit = $managedUser->effective_last_visited_at ?? $managedUser->last_visited_at)
+                                {{ $effectiveLastVisit
+                                    ? \Illuminate\Support\Carbon::parse((string) $effectiveLastVisit)->format('Y-m-d H:i')
+                                    : '-' }}
+                            </td>
                             <td class="admin-user-table__cell-control">
                                 <select name="legacy_level" form="{{ $formId }}">
                                 @foreach ([0, 1, 2, 3, 4, 9, 10] as $level)

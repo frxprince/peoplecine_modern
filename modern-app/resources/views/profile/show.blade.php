@@ -9,12 +9,13 @@
     @php($isBlocked = $viewer?->hasBlockedUser($profileUser) ?? false)
     @php($isMuted = $viewer?->hasMutedUser($profileUser) ?? false)
     @php($showAdminDetails = $showAdminDetails ?? false)
+    @php($effectiveLastVisit = $profileUser->effective_last_visited_at ?? $profileUser->last_visited_at)
 
     <section class="panel panel--hero">
         <p class="eyebrow">{{ $t('โปรไฟล์สมาชิก', 'Member Profile') }}</p>
         <h1>{{ $profileUser->displayName() }}</h1>
         <p class="lede">
-            {{ $t('ชื่อผู้ใช้: ', 'Username: ') }}{{ $profileUser->username }} | {{ $profileUser->memberLevelLabel() }}
+            {{ $t('ชื่อผู้ใช้: ', 'Username: ') }}{{ $profileUser->username }} | {{ $profileUser->memberLevelLabel() }} | {{ $t('เข้าใช้ล่าสุด: ', 'Last visit: ') }}{{ $effectiveLastVisit ? \Illuminate\Support\Carbon::parse((string) $effectiveLastVisit)->format('d M Y H:i') : $t('ยังไม่มีข้อมูล', 'No visits yet') }}
         </p>
 
         @if ($showAdminDetails)

@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +25,7 @@ class ProfileController extends Controller
                 $user->displayName().' โปรไฟล์',
                 $user->displayName().' Profile'
             ),
-            'profileUser' => $user->load('profile')->loadCount(['topics', 'posts']),
+            'profileUser' => $this->hydrateEffectiveLastVisit($user->load('profile')->loadCount(['topics', 'posts'])),
             'showAdminDetails' => false,
         ]);
     }
@@ -35,7 +39,7 @@ class ProfileController extends Controller
                 $user->displayName().' เนเธเธฃเนเธเธฅเน',
                 $user->displayName().' Profile'
             ),
-            'profileUser' => $user->load('profile')->loadCount(['topics', 'posts']),
+            'profileUser' => $this->hydrateEffectiveLastVisit($user->load('profile')->loadCount(['topics', 'posts'])),
             'showAdminDetails' => true,
         ]);
     }
@@ -105,6 +109,29 @@ class ProfileController extends Controller
     private function label(string $thai, string $english): string
     {
         return app()->getLocale() === 'th' ? $thai : $english;
+    }
+
+    private function hydrateEffectiveLastVisit(User $user): User
+    {
+        $effectiveLastVisit = $user->last_visited_at;
+
+        if (
+            $effectiveLastVisit === null
+            && Schema::hasTable('recent_visitors')
+            && Schema::hasColumn('recent_visitors', 'last_visited_at')
+        ) {
+            $fallbackLastVisit = DB::table('recent_visitors')
+                ->where('user_id', $user->id)
+                ->max('last_visited_at');
+
+            if ($fallbackLastVisit !== null) {
+                $effectiveLastVisit = Carbon::parse((string) $fallbackLastVisit);
+            }
+        }
+
+        $user->setAttribute('effective_last_visited_at', $effectiveLastVisit);
+
+        return $user;
     }
 
     private function storeUploadedAvatar(UploadedFile $avatar, int $userId, ?string $existingPath): string
