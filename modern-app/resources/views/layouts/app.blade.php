@@ -11,9 +11,62 @@
 
         return $assetUrl.'?v='.filemtime($fullPath);
     })
+    @php($seoTitle = trim((string) ($title ?? __('PeopleCine Modern'))))
+    @php($seoKeyword = 'หนังกลางแปลง')
+    @php($seoDescription = app()->getLocale() === 'th'
+        ? 'ชุมชน '.$seoKeyword.' แลกเปลี่ยนความรู้ โปรเจคเตอร์ ฟิล์ม และเว็บบอร์ดคนรักหนังกลางแปลง PeopleCine'
+        : 'PeopleCine community forum for open-air cinema ('.$seoKeyword.'), projector knowledge, film sharing, and discussion.')
+    @php($seoKeywords = implode(', ', [
+        $seoKeyword,
+        'หนังกลางแปลง',
+        'peoplecine',
+        'open-air cinema',
+        'projector',
+        'film forum',
+    ]))
+    @php($seoCanonical = url()->current())
+    @php($seoRobots = request()->routeIs('search.index')
+        ? 'noindex,follow,max-image-preview:large'
+        : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
+    @php($seoLocale = app()->getLocale() === 'th' ? 'th_TH' : 'en_US')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? __('PeopleCine Modern') }}</title>
+    <title>{{ $seoTitle }}</title>
+    <meta name="description" content="{{ $seoDescription }}">
+    <meta name="keywords" content="{{ $seoKeywords }}">
+    <meta name="robots" content="{{ $seoRobots }}">
+    <link rel="canonical" href="{{ $seoCanonical }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="PeopleCine">
+    <meta property="og:locale" content="{{ $seoLocale }}">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:url" content="{{ $seoCanonical }}">
+    <meta property="og:image" content="{{ asset('images/peoplecine-logo.png') }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $seoTitle }}">
+    <meta name="twitter:description" content="{{ $seoDescription }}">
+    <meta name="twitter:image" content="{{ asset('images/peoplecine-logo.png') }}">
+
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => 'PeopleCine',
+            'url' => url('/'),
+            'description' => $seoDescription,
+            'inLanguage' => app()->getLocale() === 'th' ? 'th' : 'en',
+            'keywords' => [
+                $seoKeyword,
+                'หนังกลางแปลง',
+                'peoplecine',
+                'open-air cinema',
+                'projector',
+            ],
+        ], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) !!}
+    </script>
     <link rel="icon" type="image/png" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
     <link rel="shortcut icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
     <link rel="apple-touch-icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">

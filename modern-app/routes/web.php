@@ -29,11 +29,13 @@ use App\Http\Controllers\ProjectorManualController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TopicController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'landing'])->name('landing');
 Route::get('/forum', [HomeController::class, 'forum'])->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/lang/{locale}', LocaleController::class)->name('locale.switch');
 Route::get('/calculator/throw', [CalculatorController::class, 'throwSelector'])->name('calculator.throw');
 Route::get('/calculator/throw/{screen}', [CalculatorController::class, 'throwCalculator'])
