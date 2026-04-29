@@ -20,6 +20,11 @@
             @endif
         </p>
         <div class="inline-actions">
+            @if ($topic->room)
+                <a class="button button--ghost button--small" href="{{ route('rooms.show', $topic->room) }}">
+                    {{ $t('กลับไปห้องเว็บบอร์ด', 'Back to Forum Room') }}
+                </a>
+            @endif
             <a
                 class="icon-button icon-button--facebook"
                 href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}"
@@ -337,4 +342,14 @@
             </div>
         @endauth
     </section>
+
+    @if ($topic->room)
+        <section class="panel panel--tight">
+            <div class="inline-actions">
+                <a class="button button--ghost button--small" href="{{ route('rooms.show', $topic->room) }}">
+                    {{ $t('กลับไปห้องเว็บบอร์ด', 'Back to Forum Room') }}
+                </a>
+            </div>
+        </section>
+    @endif
 @endsection
