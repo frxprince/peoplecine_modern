@@ -106,8 +106,7 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
 
-            Cache::add('peoplecine.site_click_counter', 0, now()->addYears(10));
-            $clickCounter = (int) Cache::increment('peoplecine.site_click_counter');
+            $clickCounter = $this->incrementSiteClickCounter();
 
             $view->with('sidebarRooms', Room::query()
                 ->visibleTo($user)
@@ -133,6 +132,38 @@ class AppServiceProvider extends ServiceProvider
         View::composer('landing', function ($view): void {
             $view->with('landingBanners', app(BannerManager::class)->landingBanners());
         });
+    }
+
+    private function incrementSiteClickCounter(): int
+    {
+        static $hasSiteCounterTable;
+        $hasSiteCounterTable ??= Schema::hasTable('site_counters');
+
+        if ($hasSiteCounterTable) {
+            DB::table('site_counters')->insertOrIgnore([
+                'key' => 'site_click_counter',
+                'value' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::table('site_counters')
+                ->where('key', 'site_click_counter')
+                ->update([
+                    'value' => DB::raw('value + 1'),
+                    'updated_at' => now(),
+                ]);
+
+            $value = DB::table('site_counters')
+                ->where('key', 'site_click_counter')
+                ->value('value');
+
+            return max(0, (int) $value);
+        }
+
+        Cache::add('peoplecine.site_click_counter', 0, now()->addYears(10));
+
+        return max(0, (int) Cache::increment('peoplecine.site_click_counter'));
     }
 
     private function resolveBuildTimestamp(): int
