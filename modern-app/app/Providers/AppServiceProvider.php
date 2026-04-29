@@ -7,12 +7,16 @@ use App\Models\Topic;
 use App\Models\User;
 use App\Support\BannerManager;
 use Carbon\CarbonImmutable;
+use FilesystemIterator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,25 +38,31 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.app', function ($view): void {
             $bannerManager = app(BannerManager::class);
             $user = request()->user();
-            $buildTimestamp = collect([
-                base_path('composer.lock'),
-                base_path('routes/web.php'),
-                resource_path('views/layouts/app.blade.php'),
-                public_path('css/peoplecine.css'),
-            ])
-                ->filter(static fn (string $path): bool => is_file($path))
-                ->map(static fn (string $path): int => (int) filemtime($path))
-                ->max() ?: time();
+            $buildTimestamp = $this->resolveBuildTimestamp();
 
             $unreadMessageCount = 0;
 
             if ($user !== null) {
-                User::withoutTimestamps(static function () use ($user): void {
+                if (Schema::hasColumn('users', 'visit_count') && Schema::hasColumn('users', 'last_visited_at')) {
+                    $now = now();
+
                     DB::table('users')
                         ->where('id', $user->id)
-                        ->increment('visit_count');
-                });
-                $user->visit_count = (int) ($user->visit_count ?? 0) + 1;
+                        ->update([
+                            'visit_count' => DB::raw('visit_count + 1'),
+                            'last_visited_at' => $now,
+                        ]);
+
+                    $user->visit_count = (int) ($user->visit_count ?? 0) + 1;
+                    $user->last_visited_at = $now;
+                } else {
+                    User::withoutTimestamps(static function () use ($user): void {
+                        DB::table('users')
+                            ->where('id', $user->id)
+                            ->increment('visit_count');
+                    });
+                    $user->visit_count = (int) ($user->visit_count ?? 0) + 1;
+                }
 
                 $unreadMessageCount = DB::table('conversation_participants')
                     ->where('user_id', $user->id)
@@ -123,5 +133,71 @@ class AppServiceProvider extends ServiceProvider
         View::composer('landing', function ($view): void {
             $view->with('landingBanners', app(BannerManager::class)->landingBanners());
         });
+    }
+
+    private function resolveBuildTimestamp(): int
+    {
+        $cacheKey = 'peoplecine.build_datetime_unix';
+        $fallback = time();
+
+        /** @var mixed $cachedValue */
+        $cachedValue = Cache::get($cacheKey);
+        if (is_numeric($cachedValue) && (int) $cachedValue > 0) {
+            return (int) $cachedValue;
+        }
+
+        $timestamp = collect([
+            base_path('composer.lock'),
+            base_path('app'),
+            base_path('config'),
+            base_path('resources'),
+            base_path('routes'),
+            public_path('js'),
+            public_path('css'),
+        ])
+            ->map(fn (string $path): int => $this->latestMtime($path))
+            ->max() ?: $fallback;
+
+        Cache::put($cacheKey, $timestamp, now()->addSeconds(60));
+
+        return $timestamp;
+    }
+
+    private function latestMtime(string $path): int
+    {
+        if (! file_exists($path)) {
+            return 0;
+        }
+
+        if (is_file($path)) {
+            return (int) (filemtime($path) ?: 0);
+        }
+
+        if (! is_dir($path)) {
+            return 0;
+        }
+
+        $latest = 0;
+
+        try {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $entry) {
+                if (! $entry->isFile()) {
+                    continue;
+                }
+
+                $mtime = (int) ($entry->getMTime() ?: 0);
+                if ($mtime > $latest) {
+                    $latest = $mtime;
+                }
+            }
+        } catch (Throwable) {
+            return 0;
+        }
+
+        return $latest;
     }
 }
