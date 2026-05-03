@@ -45,7 +45,6 @@ class HomeController extends Controller
                 ->visibleTo($user)
                 ->with(['room', 'author.profile'])
                 ->withExists(['postsWithImages as has_posted_image'])
-                ->orderByDesc('is_pinned')
                 ->orderByDesc('last_posted_at')
                 ->limit(10)
                 ->get(),
