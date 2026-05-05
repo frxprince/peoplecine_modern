@@ -42,6 +42,7 @@ class ImageInspectorController extends Controller
         }
 
         $rows = [];
+        $seen = [];
         $fields = [
             'IFD0.Make' => 'Camera Make',
             'IFD0.Model' => 'Camera Model',
@@ -68,6 +69,40 @@ class ImageInspectorController extends Controller
                 'label' => $label,
                 'value' => $this->normalizeExifValue($value),
             ];
+            $seen[$key] = true;
+        }
+
+        foreach ($exif as $section => $values) {
+            if (! is_array($values)) {
+                continue;
+            }
+
+            foreach ($values as $field => $value) {
+                $key = sprintf('%s.%s', (string) $section, (string) $field);
+
+                if (isset($seen[$key])) {
+                    continue;
+                }
+
+                if (is_array($value) && $value === []) {
+                    continue;
+                }
+
+                if (! is_scalar($value) && ! is_array($value)) {
+                    continue;
+                }
+
+                $normalizedValue = $this->normalizeExifValue($value);
+
+                if ($normalizedValue === '') {
+                    continue;
+                }
+
+                $rows[] = [
+                    'label' => $key,
+                    'value' => $normalizedValue,
+                ];
+            }
         }
 
         return $rows;

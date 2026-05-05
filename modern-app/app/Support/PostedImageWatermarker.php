@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\User;
 use DateTimeInterface;
+use Illuminate\Support\Facades\Log;
 
 class PostedImageWatermarker
 {
@@ -195,7 +196,27 @@ class PostedImageWatermarker
             return $saved;
         }
 
-        return $this->injectJpegExifSegment($absolutePath, $exifSegment);
+        $injected = $this->injectJpegExifSegment($absolutePath, $exifSegment);
+
+        if (! $injected) {
+            Log::warning('Failed to inject JPEG EXIF segment after watermark processing.', [
+                'path' => $absolutePath,
+                'segment_length' => strlen($exifSegment),
+            ]);
+
+            return false;
+        }
+
+        if ($this->hasExifMetadata($absolutePath)) {
+            return true;
+        }
+
+        Log::warning('JPEG EXIF metadata missing after watermark processing.', [
+            'path' => $absolutePath,
+            'segment_length' => strlen($exifSegment),
+        ]);
+
+        return false;
     }
 
     private function extractJpegExifSegment(string $absolutePath): ?string
@@ -272,6 +293,17 @@ class PostedImageWatermarker
         $merged = substr($bytes, 0, $insertAt).$exifSegment.substr($bytes, $insertAt);
 
         return @file_put_contents($absolutePath, $merged) !== false;
+    }
+
+    private function hasExifMetadata(string $absolutePath): bool
+    {
+        if (! function_exists('exif_read_data')) {
+            return false;
+        }
+
+        $exif = @exif_read_data($absolutePath, null, true, false);
+
+        return is_array($exif) && $exif !== [];
     }
 
     private function resolveFontPath(string $label): ?string
