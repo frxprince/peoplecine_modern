@@ -7,6 +7,7 @@ DATA_ROOT="${PROJECT_ROOT}/peoplecine_data"
 ENV_TEMPLATE="${DEPLOY_DIR}/env.production.example"
 ENV_FILE="${DATA_ROOT}/config/peoplecine.env"
 COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.production.yml"
+PHP_UPLOADS_INI="${DEPLOY_DIR}/php/uploads.ini"
 
 SQLITE_SOURCE_PATH="${SQLITE_SOURCE_PATH:-}"
 LEGACY_WBOARD_SOURCE="${LEGACY_WBOARD_SOURCE:-}"
@@ -41,6 +42,19 @@ ensure_parent_directory_for_file() {
     if [[ -d "${path}" ]]; then
         abort_path_conflict "${path}" "file"
     fi
+}
+
+ensure_file_with_default_content_if_missing() {
+    local path="$1"
+    local content="$2"
+
+    ensure_parent_directory_for_file "${path}"
+
+    if [[ -e "${path}" ]]; then
+        return 0
+    fi
+
+    printf '%s\n' "${content}" > "${path}"
 }
 
 copy_file_if_missing() {
@@ -119,6 +133,14 @@ if ! command -v docker >/dev/null 2>&1; then
     echo "docker is required but was not found in PATH." >&2
     exit 1
 fi
+
+ensure_file_with_default_content_if_missing "${PHP_UPLOADS_INI}" "$(cat <<'EOF'
+upload_max_filesize=16M
+post_max_size=32M
+max_file_uploads=20
+memory_limit=512M
+EOF
+)"
 
 for directory in \
     "${DATA_ROOT}/app/code" \

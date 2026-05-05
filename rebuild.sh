@@ -7,6 +7,7 @@ APP_SOURCE="${PROJECT_ROOT}/modern-app"
 APP_RUNTIME="${DATA_ROOT}/app/code"
 ENV_FILE="${DATA_ROOT}/config/peoplecine.env"
 COMPOSE_FILE="${PROJECT_ROOT}/deploy/docker-compose.production.yml"
+PHP_UPLOADS_INI="${PROJECT_ROOT}/deploy/php/uploads.ini"
 
 abort() {
     echo "Error: $*" >&2
@@ -26,6 +27,21 @@ ensure_directory() {
     fi
 
     mkdir -p "${path}"
+}
+
+ensure_file_with_default_content_if_missing() {
+    local path="$1"
+    local content="$2"
+    local parent
+
+    parent="$(dirname "${path}")"
+    ensure_directory "${parent}"
+
+    if [[ -e "${path}" ]]; then
+        return 0
+    fi
+
+    printf '%s\n' "${content}" > "${path}"
 }
 
 sync_app_code() {
@@ -111,6 +127,13 @@ main() {
     require_file "${ENV_FILE}"
     require_file "${APP_SOURCE}/composer.json"
     require_file "${APP_SOURCE}/composer.lock"
+    ensure_file_with_default_content_if_missing "${PHP_UPLOADS_INI}" "$(cat <<'EOF'
+upload_max_filesize=16M
+post_max_size=32M
+max_file_uploads=20
+memory_limit=512M
+EOF
+)"
 
     ensure_runtime_directories
     sync_app_code

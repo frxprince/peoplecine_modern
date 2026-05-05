@@ -17,6 +17,9 @@ class PostedImageWatermarker
         $imageType = is_array($imageDetails) && isset($imageDetails[2])
             ? (int) $imageDetails[2]
             : false;
+        $originalExifSegment = $imageType === IMAGETYPE_JPEG
+            ? $this->extractJpegExifSegment($absolutePath)
+            : null;
         $image = $this->createImageResource($absolutePath, $imageType);
 
         if (! is_object($image)) {
@@ -26,9 +29,10 @@ class PostedImageWatermarker
         try {
             $width = imagesx($image);
             $height = imagesy($image);
+            [$image, $width, $height] = $this->resizeImageIfNeeded($image, $imageType, $width, $height);
 
             if ($width < 80 || $height < 80) {
-                return $this->saveImageResource($image, $absolutePath, $imageType);
+                return $this->saveImageResource($image, $absolutePath, $imageType, $originalExifSegment);
             }
 
             $label = sprintf(
@@ -69,7 +73,7 @@ class PostedImageWatermarker
                     imagettftext($image, $fontSize, 0, $x + 1, $y + 1, $shadowColor, $fontPath, $label);
                     imagettftext($image, $fontSize, 0, $x, $y, $textColor, $fontPath, $label);
 
-                    return $this->saveImageResource($image, $absolutePath, $imageType);
+                    return $this->saveImageResource($image, $absolutePath, $imageType, $originalExifSegment);
                 }
             }
 
@@ -99,7 +103,7 @@ class PostedImageWatermarker
             imagestring($image, $font, $x + 1, $y + 1, $label, $shadowColor);
             imagestring($image, $font, $x, $y, $label, $textColor);
 
-            return $this->saveImageResource($image, $absolutePath, $imageType);
+            return $this->saveImageResource($image, $absolutePath, $imageType, $originalExifSegment);
         } finally {
             imagedestroy($image);
         }
@@ -117,9 +121,66 @@ class PostedImageWatermarker
         };
     }
 
-    private function saveImageResource(mixed $image, string $absolutePath, int|false $imageType): bool
+    /**
+     * @return array{0: mixed, 1: int, 2: int}
+     */
+    private function resizeImageIfNeeded(mixed $image, int|false $imageType, int $width, int $height): array
     {
-        return match ($imageType) {
+        $maxWidth = max(1, (int) config('peoplecine.post_image_max_width', 1920));
+        $maxHeight = max(1, (int) config('peoplecine.post_image_max_height', 1080));
+
+        if ($width <= $maxWidth && $height <= $maxHeight) {
+            return [$image, $width, $height];
+        }
+
+        $scale = min($maxWidth / max(1, $width), $maxHeight / max(1, $height));
+        $targetWidth = max(1, (int) round($width * $scale));
+        $targetHeight = max(1, (int) round($height * $scale));
+        $resized = imagecreatetruecolor($targetWidth, $targetHeight);
+
+        if (! is_object($resized)) {
+            return [$image, $width, $height];
+        }
+
+        if (in_array($imageType, [IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WEBP], true)) {
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            $transparent = imagecolorallocatealpha($resized, 0, 0, 0, 127);
+            imagefilledrectangle($resized, 0, 0, $targetWidth, $targetHeight, $transparent);
+        }
+
+        $copied = imagecopyresampled(
+            $resized,
+            $image,
+            0,
+            0,
+            0,
+            0,
+            $targetWidth,
+            $targetHeight,
+            $width,
+            $height
+        );
+
+        if (! $copied) {
+            imagedestroy($resized);
+
+            return [$image, $width, $height];
+        }
+
+        imagedestroy($image);
+
+        return [$resized, $targetWidth, $targetHeight];
+    }
+
+    private function saveImageResource(
+        mixed $image,
+        string $absolutePath,
+        int|false $imageType,
+        ?string $exifSegment = null
+    ): bool
+    {
+        $saved = match ($imageType) {
             IMAGETYPE_JPEG => imagejpeg($image, $absolutePath, (int) config('peoplecine.watermark_jpeg_quality', 90)),
             IMAGETYPE_PNG => imagepng($image, $absolutePath, (int) config('peoplecine.watermark_png_compression', 6)),
             IMAGETYPE_GIF => imagegif($image, $absolutePath),
@@ -129,6 +190,88 @@ class PostedImageWatermarker
             IMAGETYPE_BMP => function_exists('imagebmp') ? imagebmp($image, $absolutePath) : false,
             default => false,
         };
+
+        if (! $saved || $imageType !== IMAGETYPE_JPEG || $exifSegment === null) {
+            return $saved;
+        }
+
+        return $this->injectJpegExifSegment($absolutePath, $exifSegment);
+    }
+
+    private function extractJpegExifSegment(string $absolutePath): ?string
+    {
+        $bytes = @file_get_contents($absolutePath);
+
+        if (! is_string($bytes) || strlen($bytes) < 6 || ! str_starts_with($bytes, "\xFF\xD8")) {
+            return null;
+        }
+
+        $offset = 2;
+        $length = strlen($bytes);
+
+        while (($offset + 4) <= $length) {
+            if ($bytes[$offset] !== "\xFF") {
+                break;
+            }
+
+            $marker = ord($bytes[$offset + 1]);
+
+            if ($marker === 0xDA || $marker === 0xD9) {
+                break;
+            }
+
+            $segmentLength = unpack('n', substr($bytes, $offset + 2, 2))[1] ?? 0;
+
+            if ($segmentLength < 2) {
+                break;
+            }
+
+            $segmentEnd = $offset + 2 + $segmentLength;
+
+            if ($segmentEnd > $length) {
+                break;
+            }
+
+            if ($marker === 0xE1) {
+                $payload = substr($bytes, $offset + 4, $segmentLength - 2);
+
+                if (str_starts_with($payload, "Exif\x00\x00")) {
+                    return substr($bytes, $offset, 2 + $segmentLength);
+                }
+            }
+
+            $offset = $segmentEnd;
+        }
+
+        return null;
+    }
+
+    private function injectJpegExifSegment(string $absolutePath, string $exifSegment): bool
+    {
+        $bytes = @file_get_contents($absolutePath);
+
+        if (! is_string($bytes) || strlen($bytes) < 4 || ! str_starts_with($bytes, "\xFF\xD8")) {
+            return false;
+        }
+
+        $insertAt = 2;
+        $length = strlen($bytes);
+
+        if (($insertAt + 4) <= $length && $bytes[$insertAt] === "\xFF" && ord($bytes[$insertAt + 1]) === 0xE0) {
+            $app0Length = unpack('n', substr($bytes, $insertAt + 2, 2))[1] ?? 0;
+
+            if ($app0Length >= 2) {
+                $candidate = $insertAt + 2 + $app0Length;
+
+                if ($candidate <= $length) {
+                    $insertAt = $candidate;
+                }
+            }
+        }
+
+        $merged = substr($bytes, 0, $insertAt).$exifSegment.substr($bytes, $insertAt);
+
+        return @file_put_contents($absolutePath, $merged) !== false;
     }
 
     private function resolveFontPath(string $label): ?string

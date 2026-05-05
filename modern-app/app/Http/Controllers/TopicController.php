@@ -66,7 +66,12 @@ class TopicController extends Controller
         $validated = $request->validate([
             'body_html' => ['nullable', 'string'],
             'attachments' => ['nullable', 'array', 'max:'.$maxAttachments],
-            'attachments.*' => ['file', 'image', 'mimes:jpg,jpeg,png,gif,bmp,webp', 'max:'.$maxAttachmentKilobytes],
+            'attachments.*' => [
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,gif,bmp,webp',
+                'max:'.$maxAttachmentKilobytes,
+            ],
             'staged_uploads' => ['nullable', 'array', 'max:'.$maxAttachments],
             'staged_uploads.*' => ['string', 'max:100'],
         ]);
@@ -143,7 +148,12 @@ class TopicController extends Controller
             'remove_attachment_ids' => ['nullable', 'array'],
             'remove_attachment_ids.*' => ['integer'],
             'attachments' => ['nullable', 'array', 'max:'.$maxAttachments],
-            'attachments.*' => ['file', 'image', 'mimes:jpg,jpeg,png,gif,bmp,webp', 'max:'.$maxAttachmentKilobytes],
+            'attachments.*' => [
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,gif,bmp,webp',
+                'max:'.$maxAttachmentKilobytes,
+            ],
             'staged_uploads' => ['nullable', 'array', 'max:'.$maxAttachments],
             'staged_uploads.*' => ['string', 'max:100'],
         ]);
