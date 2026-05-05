@@ -8,12 +8,14 @@
     const image = viewer.querySelector('[data-image-viewer-image]');
     const caption = viewer.querySelector('[data-image-viewer-caption]');
     const closeButtons = viewer.querySelectorAll('[data-image-viewer-close]');
+    const openNewButton = viewer.querySelector('[data-image-viewer-open-new]');
     const prevButton = viewer.querySelector('[data-image-viewer-prev]');
     const nextButton = viewer.querySelector('[data-image-viewer-next]');
     const body = document.body;
 
     let currentGroup = [];
     let currentIndex = 0;
+    let currentImageHref = '';
 
     const getCaption = (link) => link.getAttribute('data-lightbox-caption') || link.querySelector('img')?.getAttribute('alt') || '';
 
@@ -23,7 +25,8 @@
         }
 
         const currentLink = currentGroup[currentIndex];
-        image.src = currentLink.href;
+        currentImageHref = currentLink.href;
+        image.src = currentImageHref;
         image.alt = getCaption(currentLink);
         caption.textContent = getCaption(currentLink);
 
@@ -49,6 +52,7 @@
         image.src = '';
         image.alt = '';
         caption.textContent = '';
+        currentImageHref = '';
         body.classList.remove('image-viewer-open');
         currentGroup = [];
         currentIndex = 0;
@@ -80,6 +84,15 @@
 
     prevButton.addEventListener('click', () => move(-1));
     nextButton.addEventListener('click', () => move(1));
+    if (openNewButton) {
+        openNewButton.addEventListener('click', () => {
+            if (!currentImageHref) {
+                return;
+            }
+
+            window.open(currentImageHref, '_blank', 'noopener,noreferrer');
+        });
+    }
 
     document.addEventListener('keydown', (event) => {
         if (viewer.hidden) {

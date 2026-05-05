@@ -1,0 +1,669 @@
+<?php
+
+declare(strict_types=1);
+
+$outputDir = __DIR__.'/../storage/app/admin-manual-mock';
+$publicDir = __DIR__.'/../public/images/admin-manual';
+
+if (! is_dir($outputDir)) {
+    mkdir($outputDir, 0777, true);
+}
+
+if (! is_dir($publicDir)) {
+    mkdir($publicDir, 0777, true);
+}
+
+$baseCss = <<<'CSS'
+<style>
+    :root {
+        color-scheme: light;
+        --bg: #f4efe3;
+        --panel: #fffdf6;
+        --line: #c8b488;
+        --ink: #2e2417;
+        --muted: #74644a;
+        --accent: #9d3d16;
+        --accent-soft: #f2ddc6;
+        --good: #295f37;
+        --warn: #886312;
+        --danger: #8f2a22;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: linear-gradient(180deg, #f6f1e6 0%, #efe6d2 100%);
+        color: var(--ink);
+    }
+
+    .frame {
+        width: 1380px;
+        margin: 0 auto;
+        padding: 28px 28px 40px;
+    }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #5f1f0f;
+        color: #fff8ec;
+        border-radius: 18px;
+        padding: 18px 22px;
+        box-shadow: 0 14px 40px rgba(74, 28, 10, 0.18);
+    }
+
+    .topbar h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: 0.02em;
+    }
+
+    .topbar p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.88;
+    }
+
+    .shell {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 22px;
+        margin-top: 22px;
+    }
+
+    .sidebar, .content, .panel {
+        background: var(--panel);
+        border: 1px solid rgba(114, 86, 44, 0.16);
+        border-radius: 18px;
+        box-shadow: 0 12px 28px rgba(80, 55, 21, 0.08);
+    }
+
+    .sidebar {
+        padding: 18px;
+    }
+
+    .menu-title {
+        margin: 0 0 10px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+    }
+
+    .menu-item {
+        display: block;
+        margin-bottom: 8px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #fbf6ea;
+        border: 1px solid rgba(114, 86, 44, 0.12);
+        font-size: 14px;
+    }
+
+    .menu-item--active {
+        background: #fff0dc;
+        border-color: rgba(157, 61, 22, 0.28);
+        color: var(--accent);
+        font-weight: 700;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 20px;
+        background: linear-gradient(135deg, #fff4df 0%, #f6e2c0 100%);
+        border: 1px solid rgba(157, 61, 22, 0.16);
+        border-radius: 16px;
+        margin-bottom: 18px;
+    }
+
+    .hero h2 {
+        margin: 0 0 6px;
+        font-size: 28px;
+    }
+
+    .hero p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 760px;
+        line-height: 1.45;
+    }
+
+    .hero-badge {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(157, 61, 22, 0.1);
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .toolbar,
+    .mail-box,
+    .two-col,
+    .banner-grid {
+        margin-bottom: 18px;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 14px 16px;
+        background: #fcf7ec;
+        border: 1px solid rgba(114, 86, 44, 0.12);
+        border-radius: 16px;
+    }
+
+    .search {
+        flex: 1 1 320px;
+        height: 42px;
+        padding: 0 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(114, 86, 44, 0.22);
+        background: #fff;
+        font-size: 14px;
+    }
+
+    .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        font-size: 14px;
+        font-weight: 700;
+        background: var(--accent);
+        color: #fff;
+    }
+
+    .button--ghost {
+        border-color: rgba(114, 86, 44, 0.22);
+        background: #fff;
+        color: var(--ink);
+    }
+
+    .button--danger {
+        background: var(--danger);
+    }
+
+    .panel {
+        padding: 16px;
+    }
+
+    .panel h3 {
+        margin: 0 0 8px;
+        font-size: 22px;
+    }
+
+    .panel p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.45;
+    }
+
+    .mail-box {
+        padding: 18px;
+        background: #fff8ec;
+        border: 1px solid rgba(157, 61, 22, 0.18);
+        border-radius: 16px;
+    }
+
+    .mail-grid,
+    .room-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+    }
+
+    .field,
+    .textarea,
+    .select {
+        height: 42px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(114, 86, 44, 0.2);
+        background: #fff;
+        font-size: 14px;
+    }
+
+    .textarea {
+        height: 108px;
+        grid-column: 1 / -1;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 16px;
+        border: 1px solid rgba(114, 86, 44, 0.12);
+    }
+
+    .table th,
+    .table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(114, 86, 44, 0.12);
+        font-size: 14px;
+        vertical-align: top;
+    }
+
+    .table th {
+        text-align: left;
+        background: #f8f1e2;
+        font-size: 13px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .table tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .meta {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        border: 1px solid rgba(114, 86, 44, 0.18);
+        background: #fff;
+    }
+
+    .pill--good { color: var(--good); }
+    .pill--warn { color: var(--warn); }
+    .pill--danger { color: var(--danger); }
+
+    .two-col {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .banner-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .banner-card {
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(114, 86, 44, 0.14);
+        background: #fcf7ec;
+    }
+
+    .banner-thumb {
+        height: 160px;
+        border-radius: 14px;
+        background:
+            linear-gradient(135deg, rgba(157, 61, 22, 0.08), rgba(46, 36, 23, 0.02)),
+            repeating-linear-gradient(
+                45deg,
+                rgba(157, 61, 22, 0.1),
+                rgba(157, 61, 22, 0.1) 10px,
+                rgba(255, 255, 255, 0.5) 10px,
+                rgba(255, 255, 255, 0.5) 20px
+            );
+        border: 1px solid rgba(114, 86, 44, 0.1);
+        margin-bottom: 12px;
+    }
+
+    .footer-note {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+        text-align: right;
+    }
+</style>
+CSS;
+
+$screens = [
+    'admin-users-overview' => [
+        'title' => 'User Admin - overview',
+        'content' => <<<'HTML'
+            <div class="topbar">
+                <div>
+                    <h1>PeopleCine Admin</h1>
+                    <p>Administration handbook capture - User Admin overview</p>
+                </div>
+                <div class="hero-badge">Admin menu > User Admin</div>
+            </div>
+            <div class="shell">
+                <aside class="sidebar">
+                    <h2 class="menu-title">Admin</h2>
+                    <span class="menu-item menu-item--active">User Admin</span>
+                    <span class="menu-item">Room Admin</span>
+                    <span class="menu-item">Banner Admin</span>
+                    <span class="menu-item">Admin Manual</span>
+                </aside>
+                <main class="content">
+                    <section class="hero">
+                        <div>
+                            <h2>User Management</h2>
+                            <p>Review member accounts, search quickly, change level and status, and manage each account from one screen.</p>
+                        </div>
+                        <div class="hero-badge">1,599 imported accounts</div>
+                    </section>
+                    <div class="toolbar">
+                        <input class="search" value="" placeholder="Search by ID, username, display name, or email">
+                        <span class="button">Search</span>
+                        <span class="button button--ghost">Clear</span>
+                        <span class="button button--danger">Delete / Disable Selected</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Address</th>
+                                <th>Phone</th>
+                                <th>Clicks</th>
+                                <th>Level</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1599</td>
+                                <td><strong>frogprince</strong><div class="meta">frogprince</div></td>
+                                <td>peoplecine@drpaween.com</td>
+                                <td>Bangkok 10200</td>
+                                <td>081-111-2222</td>
+                                <td>2,183</td>
+                                <td><span class="pill">Level 9</span></td>
+                                <td><span class="pill pill--good">Active</span></td>
+                                <td><span class="pill pill--warn">Admin</span></td>
+                                <td><span class="button">Save</span></td>
+                            </tr>
+                            <tr>
+                                <td>1598</td>
+                                <td><strong>retrocinema</strong><div class="meta">retrocinema</div></td>
+                                <td>retro@example.com</td>
+                                <td>Chiang Mai 50000</td>
+                                <td>089-555-4455</td>
+                                <td>640</td>
+                                <td><span class="pill">Level 4</span></td>
+                                <td><span class="pill pill--good">Active</span></td>
+                                <td><span class="pill">User</span></td>
+                                <td><span class="button">Save</span></td>
+                            </tr>
+                            <tr>
+                                <td>1597</td>
+                                <td><strong>oldmoviefan</strong><div class="meta">oldmoviefan</div></td>
+                                <td>oldmovie@example.com</td>
+                                <td>Nakhon Pathom 73000</td>
+                                <td>086-001-7788</td>
+                                <td>114</td>
+                                <td><span class="pill">Level 3</span></td>
+                                <td><span class="pill pill--warn">Disabled</span></td>
+                                <td><span class="pill">User</span></td>
+                                <td><span class="button">Save</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="footer-note">Use this page for search, level changes, account status, and quick review.</div>
+                </main>
+            </div>
+        HTML,
+    ],
+    'admin-users-tools' => [
+        'title' => 'User Admin - search and mail test',
+        'content' => <<<'HTML'
+            <div class="topbar">
+                <div>
+                    <h1>PeopleCine Admin</h1>
+                    <p>Administration handbook capture - Search and Mail Test</p>
+                </div>
+                <div class="hero-badge">Admin menu > User Admin</div>
+            </div>
+            <div class="shell">
+                <aside class="sidebar">
+                    <h2 class="menu-title">Admin</h2>
+                    <span class="menu-item menu-item--active">User Admin</span>
+                    <span class="menu-item">Room Admin</span>
+                    <span class="menu-item">Banner Admin</span>
+                    <span class="menu-item">Admin Manual</span>
+                </aside>
+                <main class="content">
+                    <section class="hero">
+                        <div>
+                            <h2>User Management</h2>
+                            <p>Use live search to narrow the member list, then open Mail Test when you need to verify outgoing email delivery.</p>
+                        </div>
+                        <div class="hero-badge">Search query: frog</div>
+                    </section>
+                    <section class="mail-box">
+                        <h3>Mail Test</h3>
+                        <p>Send a small test email using the current Laravel mail configuration.</p>
+                        <div class="mail-grid">
+                            <input class="field" value="peoplecine@drpaween.com" placeholder="Recipient email">
+                            <input class="field" value="PeopleCine mail test" placeholder="Subject">
+                            <textarea class="textarea">This is a test email from the PeopleCine admin panel.</textarea>
+                        </div>
+                        <div style="margin-top:14px;">
+                            <span class="button">Send Test Email</span>
+                        </div>
+                    </section>
+                    <div class="toolbar">
+                        <input class="search" value="frog" placeholder="Search users">
+                        <span class="button">Search</span>
+                        <span class="button button--ghost">Clear</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Clicks</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1599</td>
+                                <td><strong>frogprince</strong><div class="meta">primary admin account</div></td>
+                                <td>peoplecine@drpaween.com</td>
+                                <td>2,183</td>
+                                <td><span class="pill pill--good">Active</span></td>
+                                <td><span class="pill pill--warn">Admin</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="footer-note">Live search helps narrow the list immediately before you take action.</div>
+                </main>
+            </div>
+        HTML,
+    ],
+    'admin-rooms-overview' => [
+        'title' => 'Room Admin - overview',
+        'content' => <<<'HTML'
+            <div class="topbar">
+                <div>
+                    <h1>PeopleCine Admin</h1>
+                    <p>Administration handbook capture - Room Admin</p>
+                </div>
+                <div class="hero-badge">Admin menu > Room Admin</div>
+            </div>
+            <div class="shell">
+                <aside class="sidebar">
+                    <h2 class="menu-title">Admin</h2>
+                    <span class="menu-item">User Admin</span>
+                    <span class="menu-item menu-item--active">Room Admin</span>
+                    <span class="menu-item">Banner Admin</span>
+                    <span class="menu-item">Admin Manual</span>
+                </aside>
+                <main class="content">
+                    <section class="hero">
+                        <div>
+                            <h2>Room Management</h2>
+                            <p>Create rooms, set access level, control the room order, and archive old rooms without touching the database directly.</p>
+                        </div>
+                        <div class="hero-badge">43 imported rooms</div>
+                    </section>
+                    <div class="two-col">
+                        <section class="panel">
+                            <h3>Create New Room</h3>
+                            <p>Add a room and define its access from the start.</p>
+                            <div class="room-form-grid">
+                                <input class="field" value="VIP Projector Club" placeholder="Room Name">
+                                <input class="field" value="vip-projector-club" placeholder="Slug">
+                                <input class="field" value="VIP Projector Club" placeholder="English Name">
+                                <input class="field" value="#C23D11" placeholder="Name Color">
+                                <select class="select"><option>4 VIP</option></select>
+                                <input class="field" value="25" placeholder="Sort Order">
+                                <textarea class="textarea">Private discussion room for VIP members only.</textarea>
+                            </div>
+                            <div style="margin-top:14px;"><span class="button">Create Room</span></div>
+                        </section>
+                        <section class="panel">
+                            <h3>Forum Rooms</h3>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Room</th>
+                                        <th>Topics</th>
+                                        <th>Access</th>
+                                        <th>Sort</th>
+                                        <th>Archive</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Main Forum</strong><div class="meta">room-2</div></td>
+                                        <td>9,218</td>
+                                        <td><span class="pill">0 Read All</span></td>
+                                        <td>10</td>
+                                        <td><span class="pill">No</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>VIP Projector Club</strong><div class="meta">vip-projector-club</div></td>
+                                        <td>201</td>
+                                        <td><span class="pill pill--warn">4 VIP</span></td>
+                                        <td>25</td>
+                                        <td><span class="pill">No</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Staff Archive</strong><div class="meta">staff-archive</div></td>
+                                        <td>89</td>
+                                        <td><span class="pill pill--danger">9 Admin Only</span></td>
+                                        <td>90</td>
+                                        <td><span class="pill pill--warn">Yes</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+                    </div>
+                    <div class="footer-note">Common jobs: create a room, move it up, or restrict access to VIP/admin only.</div>
+                </main>
+            </div>
+        HTML,
+    ],
+    'admin-banners-overview' => [
+        'title' => 'Banner Admin - overview',
+        'content' => <<<'HTML'
+            <div class="topbar">
+                <div>
+                    <h1>PeopleCine Admin</h1>
+                    <p>Administration handbook capture - Banner Admin</p>
+                </div>
+                <div class="hero-badge">Admin menu > Banner Admin</div>
+            </div>
+            <div class="shell">
+                <aside class="sidebar">
+                    <h2 class="menu-title">Admin</h2>
+                    <span class="menu-item">User Admin</span>
+                    <span class="menu-item">Room Admin</span>
+                    <span class="menu-item menu-item--active">Banner Admin</span>
+                    <span class="menu-item">Admin Manual</span>
+                </aside>
+                <main class="content">
+                    <section class="hero">
+                        <div>
+                            <h2>Banner Management</h2>
+                            <p>Upload banners for the landing page and left panel, then update the order or remove old images.</p>
+                        </div>
+                        <div class="hero-badge">2 banner areas</div>
+                    </section>
+                    <section class="panel">
+                        <h3>Add New Banner</h3>
+                        <p>Choose the banner area, add an optional label, and upload the image.</p>
+                        <div class="room-form-grid">
+                            <select class="select"><option>Landing Page Banners</option></select>
+                            <input class="field" value="Summer promotion banner" placeholder="Alt text">
+                            <input class="field" value="summer-promo.jpg" placeholder="Selected image file">
+                        </div>
+                        <div style="margin-top:14px;"><span class="button">Upload Banner</span></div>
+                    </section>
+                    <div class="banner-grid">
+                        <section class="banner-card">
+                            <div class="banner-thumb"></div>
+                            <strong>Landing banner #1</strong>
+                            <div class="meta">Sort order: 10</div>
+                            <div style="margin-top:12px; display:flex; gap:10px;">
+                                <span class="button">Save</span>
+                                <span class="button button--danger">Delete</span>
+                            </div>
+                        </section>
+                        <section class="banner-card">
+                            <div class="banner-thumb"></div>
+                            <strong>Sidebar banner #2</strong>
+                            <div class="meta">Sort order: 20</div>
+                            <div style="margin-top:12px; display:flex; gap:10px;">
+                                <span class="button">Save</span>
+                                <span class="button button--danger">Delete</span>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="footer-note">Use Banner Admin instead of manual file upload for routine banner changes.</div>
+                </main>
+            </div>
+        HTML,
+    ],
+];
+
+foreach ($screens as $name => $screen) {
+    $html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1440, initial-scale=1">'.$baseCss.'<title>'.$screen['title'].'</title></head><body><div class="frame">'.$screen['content'].'</div></body></html>';
+    file_put_contents($outputDir.'/'.$name.'.html', $html);
+
+    $svg = <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="2200" viewBox="0 0 1440 2200">
+  <foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      {$baseCss}
+      <div class="frame">{$screen['content']}</div>
+    </div>
+  </foreignObject>
+</svg>
+SVG;
+
+    file_put_contents($publicDir.'/'.$name.'.svg', $svg);
+}
+
+echo $outputDir.PHP_EOL;

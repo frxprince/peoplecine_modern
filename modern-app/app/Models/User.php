@@ -26,6 +26,7 @@ class User extends Authenticatable
         'legacy_level',
         'legacy_authorize',
         'visit_count',
+        'last_visited_at',
         'email_verified_at',
     ];
 
@@ -43,6 +44,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_visited_at' => 'datetime',
             'password_reset_required' => 'boolean',
             'legacy_level' => 'integer',
             'visit_count' => 'integer',

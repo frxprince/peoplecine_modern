@@ -1346,6 +1346,7 @@ h2 { font-size: 1.5rem; }
     word-break: break-word;
 }
 .image-viewer__close,
+.image-viewer__open-new,
 .image-viewer__nav {
     display: inline-flex;
     align-items: center;
@@ -1364,12 +1365,46 @@ h2 { font-size: 1.5rem; }
     top: 0.3rem;
     right: 0.5rem;
 }
+.image-viewer__open-new {
+    position: absolute;
+    top: 0.3rem;
+    right: 3.15rem;
+}
 .image-viewer__nav[hidden] {
     visibility: hidden;
 }
 .image-viewer__close:hover,
+.image-viewer__open-new:hover,
 .image-viewer__nav:hover {
     background: rgba(36, 58, 90, 0.92);
+}
+.image-viewer__magnify-icon {
+    position: relative;
+    display: inline-block;
+    width: 0.95rem;
+    height: 0.95rem;
+}
+.image-viewer__magnify-icon::before {
+    content: "";
+    position: absolute;
+    left: 0.02rem;
+    top: 0.02rem;
+    width: 0.58rem;
+    height: 0.58rem;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+}
+.image-viewer__magnify-icon::after {
+    content: "";
+    position: absolute;
+    right: 0.01rem;
+    bottom: 0.01rem;
+    width: 0.4rem;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transform: rotate(45deg);
+    transform-origin: center;
 }
 .attachment-card__name {
     display: block;

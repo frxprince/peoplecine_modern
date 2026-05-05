@@ -1,6 +1,9 @@
 <div class="image-viewer" data-image-viewer hidden>
     <div class="image-viewer__backdrop" data-image-viewer-close></div>
     <div class="image-viewer__dialog" role="dialog" aria-modal="true" aria-label="{{ __('Image viewer') }}">
+        <button class="image-viewer__open-new" type="button" data-image-viewer-open-new aria-label="{{ __('Open image in new window') }}">
+            <span class="image-viewer__magnify-icon" aria-hidden="true"></span>
+        </button>
         <button class="image-viewer__close" type="button" data-image-viewer-close aria-label="{{ __('Close image viewer') }}">
             <span aria-hidden="true">&times;</span>
         </button>
