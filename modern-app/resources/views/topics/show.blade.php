@@ -242,19 +242,31 @@
                     <div class="attachment-grid">
                         @foreach ($post->attachments as $attachment)
                             @if ($attachment->isImage() && $attachment->legacyUrl())
-                                <a
-                                    class="attachment-card attachment-card--image js-lightbox-item"
-                                    href="{{ $attachment->legacyUrl() }}"
-                                    data-lightbox-group="post-{{ $post->id }}"
-                                    data-lightbox-caption="{{ $attachment->original_filename ?: __('Posted image') }}"
-                                >
-                                    <img
-                                        class="attachment-card__image"
-                                        src="{{ $attachment->legacyUrl() }}"
-                                        alt="{{ __('Posted image') }}"
-                                        loading="lazy"
+                                <div class="attachment-card-wrap">
+                                    <a
+                                        class="attachment-card attachment-card--image js-lightbox-item"
+                                        href="{{ $attachment->legacyUrl() }}"
+                                        data-lightbox-group="post-{{ $post->id }}"
+                                        data-lightbox-caption="{{ $attachment->original_filename ?: __('Posted image') }}"
                                     >
-                                </a>
+                                        <img
+                                            class="attachment-card__image"
+                                            src="{{ $attachment->legacyUrl() }}"
+                                            alt="{{ __('Posted image') }}"
+                                            loading="lazy"
+                                        >
+                                    </a>
+                                    <a
+                                        class="attachment-card__inspect"
+                                        href="{{ route('attachments.inspect', $attachment) }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="{{ $t('เปิดภาพเต็มขนาด พร้อม EXIF และฮิสโตแกรม', 'Open full image with EXIF and histogram') }}"
+                                        aria-label="{{ $t('เปิดภาพเต็มขนาด พร้อม EXIF และฮิสโตแกรม', 'Open full image with EXIF and histogram') }}"
+                                    >
+                                        +
+                                    </a>
+                                </div>
                             @else
                                 <div class="attachment-card">
                                     @if ($attachment->legacyUrl())

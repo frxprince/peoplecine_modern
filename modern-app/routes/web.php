@@ -17,6 +17,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectMessagePreferenceController;
 use App\Http\Controllers\EulaController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ImageInspectorController;
 use App\Http\Controllers\LegacyArticleMediaController;
 use App\Http\Controllers\LegacyArticlePdfController;
 use App\Http\Controllers\LegacyInlineMediaController;
@@ -54,6 +55,7 @@ Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name
 Route::get('/legacy-article-media', LegacyArticleMediaController::class)->name('legacy-article-media.show');
 Route::get('/legacy-inline-media', LegacyInlineMediaController::class)->name('legacy-inline-media.show');
 Route::get('/legacy-media/{attachment}', LegacyMediaController::class)->name('legacy-media.show');
+Route::get('/attachments/{attachment}/inspect', ImageInspectorController::class)->name('attachments.inspect');
 Route::get('/avatars/{user}', AvatarController::class)->name('avatars.show');
 Route::get('/managed-banners/{section}/{filename}', ManagedBannerController::class)
     ->where('section', 'sidebar|landing')
