@@ -88,7 +88,20 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.toBlob((blob) => resolve(blob), type, quality);
     });
 
-    const prepareImageFile = async (file, maxWidth, maxHeight, quality, text = {}) => {
+    const prepareImageFile = async (file, maxWidth, maxHeight, quality, text = {}, preserveMetadata = true) => {
+        if (preserveMetadata) {
+            return {
+                file,
+                key: fileKey(file),
+                resized: false,
+                originalWidth: null,
+                originalHeight: null,
+                finalWidth: null,
+                finalHeight: null,
+                note: text.preserveOriginal ?? 'Original image kept to preserve metadata.',
+            };
+        }
+
         const outputType = outputTypeFor(file);
 
         if (!outputType) {
@@ -189,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxWidth = Number.parseInt(uploader.dataset.maxWidth ?? '1920', 10) || 1920;
         const maxHeight = Number.parseInt(uploader.dataset.maxHeight ?? '1080', 10) || 1080;
         const resizeQuality = Number.parseFloat(uploader.dataset.resizeQuality ?? '0.9') || 0.9;
+        const preserveMetadata = (uploader.dataset.preserveMetadata ?? '1') !== '0';
         const text = {
             noImagesSelected: uploader.dataset.textNoImagesSelected ?? 'No images selected.',
             imagesReady: uploader.dataset.textImagesReady ?? '__COUNT__ images ready to upload.',
@@ -198,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gifOriginal: uploader.dataset.textGifOriginal ?? 'GIF kept original to avoid breaking animation.',
             browserResizeUnavailable: uploader.dataset.textBrowserResizeUnavailable ?? 'Browser resize unavailable, original kept.',
             resized: uploader.dataset.textResized ?? 'Resized from __FROM__ to __TO__.',
+            preserveOriginal: uploader.dataset.textPreserveOriginal ?? 'Original image kept to preserve metadata.',
         };
 
         if (!input || !target || !trigger || !list || !summary) {
@@ -300,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     continue;
                 }
 
-                const prepared = await prepareImageFile(file, maxWidth, maxHeight, resizeQuality, text);
+                const prepared = await prepareImageFile(file, maxWidth, maxHeight, resizeQuality, text, preserveMetadata);
 
                 if (merged.some((candidate) => candidate.key === prepared.key)) {
                     continue;

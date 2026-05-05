@@ -17,6 +17,7 @@
     data-max-width="{{ $uploaderMaxWidth }}"
     data-max-height="{{ $uploaderMaxHeight }}"
     data-resize-quality="{{ $uploaderResizeQuality }}"
+    data-preserve-metadata="1"
     data-text-no-images-selected="{{ __('No images selected.') }}"
     data-text-images-ready="{{ __(':count images ready to upload.', ['count' => '__COUNT__']) }}"
     data-text-remove="{{ __('Remove') }}"
@@ -25,6 +26,7 @@
     data-text-gif-original="{{ __('GIF kept original to avoid breaking animation.') }}"
     data-text-browser-resize-unavailable="{{ __('Browser resize unavailable, original kept.') }}"
     data-text-resized="{{ __('Resized from :from to :to.', ['from' => '__FROM__', 'to' => '__TO__']) }}"
+    data-text-preserve-original="{{ __('Original image kept to preserve metadata.') }}"
 >
     <label class="legacy-uploader__label" for="{{ $uploaderId }}">{{ $uploaderLabel }}</label>
 
@@ -46,7 +48,7 @@
 
         <p class="legacy-uploader__title">{{ __('Drop images here') }}</p>
         <p class="legacy-uploader__hint">{{ $uploaderHint }}</p>
-        <p class="legacy-uploader__hint">Large images will be resized to fit within {{ $uploaderMaxWidth }}×{{ $uploaderMaxHeight }} before upload.</p>
+        <p class="legacy-uploader__hint">{{ __('Images are uploaded as original files to preserve EXIF metadata.') }}</p>
         <button class="button button--small button--ghost legacy-uploader__button" type="button" data-upload-trigger>
             {{ __('Choose Images') }}
         </button>

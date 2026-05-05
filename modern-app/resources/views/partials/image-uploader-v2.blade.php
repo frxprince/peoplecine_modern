@@ -20,6 +20,7 @@
     data-staged-max-width="{{ $uploaderMaxWidth }}"
     data-staged-max-height="{{ $uploaderMaxHeight }}"
     data-staged-resize-quality="{{ $uploaderResizeQuality }}"
+    data-staged-preserve-metadata="1"
     data-text-no-images-uploaded="{{ __('No images uploaded yet.') }}"
     data-text-uploaded-summary="{{ __(':count uploaded', ['count' => '__COUNT__']) }}"
     data-text-in-progress-summary="{{ __(':count in progress', ['count' => '__COUNT__']) }}"
@@ -36,6 +37,7 @@
     data-text-gif-original="{{ __('GIF kept original to avoid breaking animation.') }}"
     data-text-browser-resize-unavailable="{{ __('Browser resize unavailable, original kept.') }}"
     data-text-resized="{{ __('Resized from :from to :to.', ['from' => '__FROM__', 'to' => '__TO__']) }}"
+    data-text-preserve-original="{{ __('Original image kept to preserve metadata.') }}"
 >
     <label class="legacy-uploader__label" for="{{ $uploaderId }}">{{ $uploaderLabel }}</label>
 
@@ -56,7 +58,7 @@
 
         <p class="legacy-uploader__title">{{ __('Drop images here') }}</p>
         <p class="legacy-uploader__hint">{{ $uploaderHint }}</p>
-        <p class="legacy-uploader__hint">{{ __('Large images will be resized to fit within :size before upload.', ['size' => $uploaderMaxWidth.'x'.$uploaderMaxHeight]) }}</p>
+        <p class="legacy-uploader__hint">{{ __('Images are uploaded as original files to preserve EXIF metadata.') }}</p>
         <button class="button button--small button--ghost legacy-uploader__button" type="button" data-staged-trigger>
             {{ __('Choose Images') }}
         </button>

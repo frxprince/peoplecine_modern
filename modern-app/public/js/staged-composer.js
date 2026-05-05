@@ -121,7 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.toBlob((blob) => resolve(blob), type, quality);
     });
 
-    const prepareImageFile = async (file, maxWidth, maxHeight, quality, text = {}) => {
+    const prepareImageFile = async (file, maxWidth, maxHeight, quality, text = {}, preserveMetadata = true) => {
+        if (preserveMetadata) {
+            return {
+                file,
+                key: fileKey(file),
+                note: text.preserveOriginal ?? 'Original image kept to preserve metadata.',
+                finalWidth: null,
+                finalHeight: null,
+            };
+        }
+
         const outputType = outputTypeFor(file);
 
         if (!outputType) {
@@ -197,9 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const extractErrorMessage = (payload) => {
+    const extractErrorMessage = (payload, fallbackText = {}) => {
         if (!payload) {
-            return text.uploadFailed ?? 'Upload failed.';
+            return fallbackText.uploadFailed ?? 'Upload failed.';
         }
 
         if (typeof payload.message === 'string' && payload.message !== '') {
@@ -215,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        return text.uploadFailed ?? 'Upload failed.';
+        return fallbackText.uploadFailed ?? 'Upload failed.';
     };
 
     document.querySelectorAll('[data-staged-uploader]').forEach((uploader) => {
@@ -233,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxWidth = Number.parseInt(uploader.dataset.stagedMaxWidth ?? '1920', 10) || 1920;
         const maxHeight = Number.parseInt(uploader.dataset.stagedMaxHeight ?? '1080', 10) || 1080;
         const resizeQuality = Number.parseFloat(uploader.dataset.stagedResizeQuality ?? '0.9') || 0.9;
+        const preserveMetadata = (uploader.dataset.stagedPreserveMetadata ?? '1') !== '0';
         const text = {
             noImagesUploaded: uploader.dataset.textNoImagesUploaded ?? 'No images uploaded yet.',
             uploadedSummary: uploader.dataset.textUploadedSummary ?? '__COUNT__ uploaded',
@@ -250,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gifOriginal: uploader.dataset.textGifOriginal ?? 'GIF kept original to avoid breaking animation.',
             browserResizeUnavailable: uploader.dataset.textBrowserResizeUnavailable ?? 'Browser resize unavailable, original kept.',
             resized: uploader.dataset.textResized ?? 'Resized from __FROM__ to __TO__.',
+            preserveOriginal: uploader.dataset.textPreserveOriginal ?? 'Original image kept to preserve metadata.',
         };
         const csrfToken = form?.querySelector('input[name="_token"]')?.value ?? '';
         const submitButtons = form ? Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]')) : [];
@@ -507,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.status = 'preparing';
                     render();
 
-                    const prepared = await prepareImageFile(item.file, maxWidth, maxHeight, resizeQuality, text);
+                    const prepared = await prepareImageFile(item.file, maxWidth, maxHeight, resizeQuality, text, preserveMetadata);
 
                     if (item.removed) {
                         return;
