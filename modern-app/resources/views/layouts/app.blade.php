@@ -71,6 +71,13 @@
     <link rel="shortcut icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
     <link rel="apple-touch-icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
     <link rel="stylesheet" href="{{ $versionedAsset('css/peoplecine.css') }}">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-78EGW33XD5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-78EGW33XD5');
+    </script>
 </head>
 <body>
     @php($cookieConsent = request()->cookie('peoplecine_cookie_consent'))
