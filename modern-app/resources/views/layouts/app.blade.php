@@ -91,6 +91,9 @@
     @php($topicCountLabel = $currentLocale === 'th' ? 'หัวข้อ' : 'topics')
     @php($clickCounterLabel = $currentLocale === 'th' ? 'จำนวนการเข้าชม' : 'Click counter')
     @php($buildDatetimeLabel = $currentLocale === 'th' ? 'วันเวลาบิลด์' : 'Build datetime')
+    @php($headerAdminInfo = $currentLocale === 'th'
+        ? 'ประธานกรรมการ : แอ๊ด สตูดิโอ | โปรแกรมเมอร์: ปวีณ เขื่อนแก้ว | เวบมาสเตอร์: อนุกูล วิมูลศักดิ์ 084-819-7374, 095-308-6840 | av_entlib@yahoo.com'
+        : 'Chairman: Add Studio | Programmer: Paween Khuankaew | Webmaster: Anukul Wimoonsak 084-819-7374, 095-308-6840 | av_entlib@yahoo.com')
     <div class="legacy-shell">
         <header class="legacy-header">
             <div class="legacy-header__banner">
@@ -107,6 +110,7 @@
                         <p class="legacy-header__tag">peoplecine.com</p>
                         <h1>{{ __('PeopleCine Main Forum') }}</h1>
                         <p class="legacy-header__subtitle">{{ __('Open-air cinema community') }}</p>
+                        <p class="legacy-header__admin-info">{{ $headerAdminInfo }}</p>
                     </div>
                 </div>
                 <div class="legacy-header__stats">
