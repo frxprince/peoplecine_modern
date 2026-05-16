@@ -172,8 +172,9 @@ class LegacyHtmlFormatter
             if ($embed instanceof DOMElement) {
                 $fragment->appendChild($embed);
             } else {
-                $anchor = $dom->createElement('a', $url);
+                $anchor = $dom->createElement('a');
                 $anchor->setAttribute('href', $href);
+                $anchor->appendChild($dom->createTextNode($url));
                 self::decorateAnchor($anchor);
                 $fragment->appendChild($anchor);
             }

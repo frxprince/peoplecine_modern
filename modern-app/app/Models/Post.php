@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Throwable;
 
 class Post extends Model
 {
@@ -80,7 +81,13 @@ class Post extends Model
 
     public function renderedBodyHtml(): string
     {
-        return LegacyHtmlFormatter::linkify($this->body_html);
+        try {
+            return LegacyHtmlFormatter::linkify($this->body_html);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return e((string) $this->body_html);
+        }
     }
 
     public function isOwnedBy(?User $user): bool

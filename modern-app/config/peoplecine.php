@@ -17,7 +17,7 @@ return [
     'banner_public_root' => env('PEOPLECINE_BANNER_PUBLIC_ROOT', storage_path('app/private/managed-banners')),
     'banner_public_prefix' => env('PEOPLECINE_BANNER_PUBLIC_PREFIX', 'images/managed-banners'),
     'post_image_limit' => (int) env('PEOPLECINE_POST_IMAGE_LIMIT', 12),
-    'post_image_max_kb' => (int) env('PEOPLECINE_POST_IMAGE_MAX_KB', 4096),
+    'post_image_max_kb' => (int) env('PEOPLECINE_POST_IMAGE_MAX_KB', 16384),
     'post_image_max_width' => (int) env('PEOPLECINE_POST_IMAGE_MAX_WIDTH', 1920),
     'post_image_max_height' => (int) env('PEOPLECINE_POST_IMAGE_MAX_HEIGHT', 1080),
     'post_image_base_directory' => env('PEOPLECINE_POST_IMAGE_BASE_DIRECTORY', 'picpost'),
