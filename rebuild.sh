@@ -77,23 +77,16 @@ ensure_runtime_directories() {
     done
 }
 
-install_php_dependencies_if_needed() {
-    local runtimeComposerLock="${APP_RUNTIME}/composer.lock"
-    local runtimeAutoload="${APP_RUNTIME}/vendor/autoload.php"
-
-    if [[ ! -f "${runtimeAutoload}" || "${runtimeComposerLock}" -nt "${runtimeAutoload}" ]]; then
-        echo "Installing PHP dependencies into mounted runtime ..."
-        docker run --rm \
-            -v "${APP_RUNTIME}:/app" \
-            -w /app \
-            composer:2 install \
-            --no-dev \
-            --prefer-dist \
-            --no-interaction \
-            --optimize-autoloader
-    else
-        echo "Composer dependencies already up to date."
-    fi
+install_php_dependencies() {
+    echo "Reconciling PHP dependencies with composer.lock ..."
+    docker run --rm \
+        -v "${APP_RUNTIME}:/app" \
+        -w /app \
+        composer:2 install \
+        --no-dev \
+        --prefer-dist \
+        --no-interaction \
+        --optimize-autoloader
 }
 
 fix_permissions() {
@@ -119,6 +112,9 @@ run_laravel_maintenance() {
 
     echo "Clearing Laravel caches ..."
     docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" exec -T app php artisan optimize:clear
+
+    echo "Rebuilding Laravel caches ..."
+    docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" exec -T app php artisan optimize
 }
 
 main() {
@@ -137,7 +133,7 @@ EOF
 
     ensure_runtime_directories
     sync_app_code
-    install_php_dependencies_if_needed
+    install_php_dependencies
     fix_permissions
     bring_up_stack
     run_laravel_maintenance

@@ -52,7 +52,7 @@
 
     <script type="application/ld+json">
         {!! json_encode([
-            '@context' => 'https://schema.org',
+            '@@context' => 'https://schema.org',
             '@type' => 'WebSite',
             'name' => 'PeopleCine',
             'url' => url('/'),

@@ -1,4 +1,3 @@
-CREATE USER IF NOT EXISTS 'ohm'@'%' IDENTIFIED BY '2001Serenity';
-GRANT ALL PRIVILEGES ON *.* TO 'ohm'@'%' WITH GRANT OPTION;
-GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '2001Serenity' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
+-- The official MariaDB image creates MARIADB_USER with access only to
+-- MARIADB_DATABASE. Global grants and remote root access are intentionally
+-- not created here.

@@ -109,6 +109,23 @@ copy_tree_preserving_existing() {
     fi
 }
 
+generate_secret() {
+    if command -v openssl >/dev/null 2>&1; then
+        openssl rand -hex 24
+        return
+    fi
+
+    od -An -N24 -tx1 /dev/urandom | tr -d ' \n'
+}
+
+replace_env_value() {
+    local key="$1"
+    local value="$2"
+
+    sed -i.bak "s#^${key}=.*#${key}=${value}#" "${ENV_FILE}"
+    rm -f "${ENV_FILE}.bak"
+}
+
 install_php_dependencies() {
     local appRoot="$1"
 
@@ -189,11 +206,23 @@ if [[ ! -f "${DATA_ROOT}/app/code/vendor/autoload.php" ]]; then
     install_php_dependencies "${DATA_ROOT}/app/code"
 fi
 
+ENV_FILE_CREATED=false
+
 if [[ ! -f "${ENV_FILE}" ]]; then
     ensure_parent_directory_for_file "${ENV_FILE}"
     cp "${ENV_TEMPLATE}" "${ENV_FILE}"
+    ENV_FILE_CREATED=true
 elif [[ -d "${ENV_FILE}" ]]; then
     abort_path_conflict "${ENV_FILE}" "file"
+fi
+
+if [[ "${ENV_FILE_CREATED}" == true ]]; then
+    APPLICATION_DB_PASSWORD="$(generate_secret)"
+    ROOT_DB_PASSWORD="$(generate_secret)"
+
+    replace_env_value "DB_PASSWORD" "${APPLICATION_DB_PASSWORD}"
+    replace_env_value "MARIADB_PASSWORD" "${APPLICATION_DB_PASSWORD}"
+    replace_env_value "MARIADB_ROOT_PASSWORD" "${ROOT_DB_PASSWORD}"
 fi
 
 if grep -q '^APP_KEY=$' "${ENV_FILE}"; then
@@ -279,4 +308,4 @@ echo "PeopleCine is ready."
 echo "Website:  http://localhost:7000"
 echo "MariaDB:  127.0.0.1:7010"
 echo "DB user:  ohm"
-echo "DB pass:  2001Serenity"
+echo "DB password is stored in: ${ENV_FILE}"

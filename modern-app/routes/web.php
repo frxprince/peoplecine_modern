@@ -64,18 +64,18 @@ Route::get('/managed-banners/{section}/{filename}', ManagedBannerController::cla
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:5,1')->name('password.email');
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:5,1')->name('password.store');
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::get('/register/captcha', [RegisteredUserController::class, 'captcha'])->name('register.captcha');
     Route::post('/register', [RegisteredUserController::class, 'store'])->name('register.store');
 });
 
 Route::middleware('auth')->group(function () {
-    Route::post('/composer/uploads', [ComposerUploadController::class, 'store'])->name('composer.uploads.store');
+    Route::post('/composer/uploads', [ComposerUploadController::class, 'store'])->middleware('throttle:30,1')->name('composer.uploads.store');
     Route::delete('/composer/uploads/{stagedUpload}', [ComposerUploadController::class, 'destroy'])->name('composer.uploads.destroy');
     Route::post('/rooms/{room:slug}/topics', [RoomController::class, 'storeTopic'])->name('rooms.topics.store');
     Route::post('/topics/{topic}/replies', [TopicController::class, 'storeReply'])->name('topics.replies.store');

@@ -31,7 +31,7 @@ services:
     env_file:
       - ../peoplecine_data/config/peoplecine.env
     ports:
-      - "7010:3306"
+      - "${MARIADB_BIND_ADDRESS:-127.0.0.1}:${MARIADB_HOST_PORT:-7010}:3306"
     volumes:
       - ../peoplecine_data/mariadb/data:/var/lib/mysql
       - ./mariadb-init:/docker-entrypoint-initdb.d:ro

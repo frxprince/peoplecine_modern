@@ -263,7 +263,8 @@ class LegacyHtmlFormatter
         foreach ($attributes as $attributeName) {
             $normalizedName = strtolower($attributeName);
 
-            if (str_starts_with($normalizedName, 'on')) {
+            if (str_starts_with($normalizedName, 'on')
+                || str_starts_with($normalizedName, 'data-mce-')) {
                 $element->removeAttribute($attributeName);
 
                 continue;
