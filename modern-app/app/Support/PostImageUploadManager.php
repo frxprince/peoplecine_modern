@@ -25,17 +25,19 @@ class PostImageUploadManager
         $root = $this->stagingRoot();
         $directory = $root.DIRECTORY_SEPARATOR.$user->getKey();
         $originalFilename = $file->getClientOriginalName();
-        $mimeType = $file->getMimeType();
+        $metadata = SafeImageUpload::inspectUpload($file);
+        $mimeType = $metadata['mime'];
 
         File::ensureDirectoryExists($directory);
 
-        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
+        $extension = $metadata['extension'];
         $fileName = $token.'.'.$extension;
         $absolutePath = $directory.DIRECTORY_SEPARATOR.$fileName;
 
         $file->move($directory, $fileName);
 
-        [$width, $height] = $this->detectImageDimensions($absolutePath);
+        $width = $metadata['width'];
+        $height = $metadata['height'];
 
         return StagedUpload::query()->create([
             'token' => $token,
@@ -73,9 +75,10 @@ class PostImageUploadManager
         $slot = $startingSlot;
 
         foreach (array_values($files) as $file) {
-            $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
+            $metadata = SafeImageUpload::inspectUpload($file);
+            $extension = $metadata['extension'];
             $originalFilename = $file->getClientOriginalName();
-            $mimeType = $file->getMimeType();
+            $mimeType = $metadata['mime'];
             $sizeBytes = $file->getSize();
             $fileName = sprintf(
                 'modern-%s-%d-%d-%s.%s',
@@ -159,7 +162,8 @@ class PostImageUploadManager
                 ]);
             }
 
-            $extension = strtolower(pathinfo($upload->original_filename, PATHINFO_EXTENSION) ?: pathinfo($sourcePath, PATHINFO_EXTENSION) ?: 'jpg');
+            $metadata = SafeImageUpload::inspectPath($sourcePath, 'staged_uploads');
+            $extension = $metadata['extension'];
             $fileName = sprintf(
                 'modern-%s-%d-%d-%s.%s',
                 $prefix,
@@ -181,7 +185,7 @@ class PostImageUploadManager
                 $slot,
                 $legacyDirectory.'/'.$fileName,
                 $upload->original_filename,
-                $upload->mime_type,
+                $metadata['mime'],
                 $upload->size_bytes,
                 $width,
                 $height

@@ -42,7 +42,8 @@ class BannerManager
         $config = $this->loadConfig();
         $items = $config[$section] ?? [];
 
-        $extension = Str::lower($image->getClientOriginalExtension() ?: $image->extension() ?: 'jpg');
+        $metadata = SafeImageUpload::inspectUpload($image);
+        $extension = $metadata['extension'];
         $fileName = $section.'-'.now()->format('YmdHis').'-'.Str::lower(Str::random(8)).'.'.$extension;
         $relativePath = trim(config('peoplecine.banner_public_prefix', 'images/managed-banners'), '/').'/'.$section.'/'.$fileName;
         $targetDirectory = $this->sectionRoot($section);

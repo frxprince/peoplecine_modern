@@ -16,7 +16,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev \
     && composer run-script post-autoload-dump --no-dev
 
-FROM php:8.3-apache
+FROM php:8.3.36-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \

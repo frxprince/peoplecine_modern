@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\SafeImageUpload;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\RedirectResponse;
@@ -136,6 +137,7 @@ class ProfileController extends Controller
 
     private function storeUploadedAvatar(UploadedFile $avatar, int $userId, ?string $existingPath): string
     {
+        $metadata = SafeImageUpload::inspectUpload($avatar, 'avatar');
         $root = (string) config('peoplecine.legacy_wboard_root');
         $iconsDirectory = rtrim($root, '\\/').DIRECTORY_SEPARATOR.'icons';
 
@@ -149,7 +151,7 @@ class ProfileController extends Controller
             }
         }
 
-        $extension = strtolower($avatar->getClientOriginalExtension() ?: $avatar->extension() ?: 'jpg');
+        $extension = $metadata['extension'];
         $fileName = 'member-avatar-'.$userId.'-'.Str::random(16).'.'.$extension;
 
         $avatar->move($iconsDirectory, $fileName);

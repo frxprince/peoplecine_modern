@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # Only the two intentional front controllers may execute as PHP from public.
+    RewriteCond %{REQUEST_URI} !^/(?:index\.php|articles/index\.php)$ [NC]
+    RewriteRule \.(?:php[0-9]*|phtml|pht|phar)(?:/|$) - [F,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

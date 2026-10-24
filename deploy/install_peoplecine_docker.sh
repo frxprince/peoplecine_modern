@@ -156,6 +156,7 @@ upload_max_filesize=16M
 post_max_size=32M
 max_file_uploads=20
 memory_limit=512M
+session.upload_progress.enabled=0
 EOF
 )"
 
