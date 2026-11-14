@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # Let Laravel redirect the retired homepage; never execute legacy PHP.
+    RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+    RewriteRule ^wboard/default\.php/?$ index.php [END]
+
     # Only the two intentional front controllers may execute as PHP from public.
     RewriteCond %{REQUEST_URI} !^/(?:index\.php|articles/index\.php)$ [NC]
     RewriteRule \.(?:php[0-9]*|phtml|pht|phar)(?:/|$) - [F,L,NC]

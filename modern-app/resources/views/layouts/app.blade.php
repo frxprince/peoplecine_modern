@@ -71,6 +71,7 @@
     <link rel="shortcut icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
     <link rel="apple-touch-icon" href="{{ $versionedAsset('images/peoplecine-logo.png') }}">
     <link rel="stylesheet" href="{{ $versionedAsset('css/peoplecine.css') }}">
+    <link rel="stylesheet" href="{{ $versionedAsset('css/forum-submit-status.css') }}">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-78EGW33XD5"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -364,6 +365,7 @@
         </section>
     @endif
     @include('partials.image-viewer-modal')
+    @include('partials.forum-submit-status')
     <script>
         window.peoplecineTinyMceBase = @json('/vendor/tinymce');
     </script>
@@ -372,6 +374,7 @@
     <script src="{{ $versionedAsset('js/legacy-composer.js') }}" defer></script>
     <script src="{{ $versionedAsset('js/staged-composer.js') }}" defer></script>
     <script src="{{ $versionedAsset('js/forum-form-validation.js') }}" defer></script>
+    <script src="{{ $versionedAsset('js/forum-submit-status.js') }}" defer></script>
     @yield('pageScripts')
     <script src="/vendor/tinymce/tinymce.min.js" defer></script>
     <script src="{{ $versionedAsset('js/legacy-tinymce.js') }}" defer></script>

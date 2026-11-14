@@ -35,6 +35,8 @@ use App\Http\Controllers\TopicController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'landing'])->name('landing');
+Route::get('/wboard/default.php', static fn () => redirect()->route('landing', [], 301))
+    ->name('legacy.home');
 Route::get('/forum', [HomeController::class, 'forum'])->name('home');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/lang/{locale}', LocaleController::class)->name('locale.switch');
