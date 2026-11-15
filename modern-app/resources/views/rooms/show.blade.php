@@ -35,7 +35,7 @@
 
         @auth
             @if (auth()->user()->canCreateTopic())
-                <form class="form-stack" method="POST" action="{{ route('rooms.topics.store', $room) }}" enctype="multipart/form-data" data-forum-submit="topic" data-forum-validate data-require-title="true" data-require-body="true" data-error-title-required="{{ $t('กรุณาใส่ชื่อหัวข้อก่อนโพสต์', 'Please enter a topic title before posting.') }}" data-error-body-required="{{ $t('กรุณาใส่ข้อความหัวข้อก่อนโพสต์', 'Please enter a topic message before posting.') }}" novalidate>
+                <form class="form-stack" method="POST" action="{{ route('rooms.topics.store', $room) }}" enctype="multipart/form-data" data-forum-submit="topic" data-forum-recovery-url="{{ route('rooms.show', $room, false) }}" data-forum-validate data-require-title="true" data-require-body="true" data-error-title-required="{{ $t('กรุณาใส่ชื่อหัวข้อก่อนโพสต์', 'Please enter a topic title before posting.') }}" data-error-body-required="{{ $t('กรุณาใส่ข้อความหัวข้อก่อนโพสต์', 'Please enter a topic message before posting.') }}" novalidate>
                     @csrf
 
                     <div class="form-field" data-forum-field="title">

@@ -70,7 +70,7 @@
                             </button>
                         </form>
                     @endif
-                    <form method="POST" action="{{ route('topics.destroy', $topic) }}" onsubmit="return confirm(@js(__('Delete this topic and all replies?')));">
+                    <form method="POST" action="{{ route('topics.destroy', $topic) }}" data-forum-submit="delete-topic" data-forum-recovery-url="{{ route('rooms.show', $topic->room, false) }}" onsubmit="return confirm(@js(__('Delete this topic and all replies?')));">
                         @csrf
                         @method('DELETE')
                         <button class="icon-button icon-button--danger" type="submit" title="{{ __('Delete topic') }}" aria-label="{{ __('Delete topic') }}">
@@ -311,7 +311,7 @@
             @if ($topic->is_locked && ! auth()->user()->canAccessAdminPanel())
                 <p class="empty-state">{{ $t('หัวข้อนี้ถูกล็อก', 'This topic is locked.') }}</p>
             @elseif (auth()->user()->canReply())
-                <form class="form-stack" method="POST" action="{{ route('topics.replies.store', $topic) }}" enctype="multipart/form-data" data-forum-submit="reply" data-forum-validate data-require-body-or-image="true" data-error-body-or-image-required="{{ $t('กรุณาใส่ข้อความตอบหรืออัปโหลดรูปภาพอย่างน้อย 1 รูปก่อนโพสต์', 'Please enter a reply message or upload at least one image before posting.') }}" novalidate>
+                <form class="form-stack" method="POST" action="{{ route('topics.replies.store', $topic) }}" enctype="multipart/form-data" data-forum-submit="reply" data-forum-recovery-url="{{ route('topics.show', $topic, false) }}" data-forum-validate data-require-body-or-image="true" data-error-body-or-image-required="{{ $t('กรุณาใส่ข้อความตอบหรืออัปโหลดรูปภาพอย่างน้อย 1 รูปก่อนโพสต์', 'Please enter a reply message or upload at least one image before posting.') }}" novalidate>
                     @csrf
 
                     <div class="form-field" data-forum-field="body">

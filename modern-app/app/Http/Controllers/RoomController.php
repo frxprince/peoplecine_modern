@@ -6,9 +6,11 @@ use App\Models\Attachment;
 use App\Models\Post;
 use App\Models\Room;
 use App\Models\Topic;
+use App\Support\ForumSubmissionResponse;
 use App\Support\PostImageUploadManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +40,7 @@ class RoomController extends Controller
         ]);
     }
 
-    public function storeTopic(Request $request, Room $room): RedirectResponse
+    public function storeTopic(Request $request, Room $room): JsonResponse|RedirectResponse
     {
         $user = $request->user();
         $maxAttachments = max(1, (int) config('peoplecine.post_image_limit', 12));
@@ -114,9 +116,13 @@ class RoomController extends Controller
             return $topic->fresh();
         });
 
-        return redirect()
-            ->route('topics.show', $topic)
-            ->with('status', 'Your new topic has been posted.');
+        return ForumSubmissionResponse::toRoute(
+            $request,
+            'topics.show',
+            ['topic' => $topic],
+            'Your new topic has been posted.',
+            201
+        );
     }
 
     private function nextModernSourceId(string $sourceTable): int

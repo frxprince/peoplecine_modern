@@ -6,9 +6,11 @@ use App\Models\Attachment;
 use App\Models\Post;
 use App\Models\PostChangeLog;
 use App\Models\Topic;
+use App\Support\ForumSubmissionResponse;
 use App\Support\PostImageUploadManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +53,7 @@ class TopicController extends Controller
         ]);
     }
 
-    public function storeReply(Request $request, Topic $topic): RedirectResponse
+    public function storeReply(Request $request, Topic $topic): JsonResponse|RedirectResponse
     {
         $topic->load('room');
 
@@ -124,9 +126,13 @@ class TopicController extends Controller
             'updated_at' => $post->created_at,
         ])->save();
 
-        return redirect()
-            ->route('topics.show', $topic)
-            ->with('status', 'Your reply has been posted.');
+        return ForumSubmissionResponse::toRoute(
+            $request,
+            'topics.show',
+            ['topic' => $topic],
+            'Your reply has been posted.',
+            201
+        );
     }
 
     public function updatePost(Request $request, Topic $topic, Post $post): RedirectResponse
@@ -281,7 +287,7 @@ class TopicController extends Controller
             ->with('status', 'Your post has been updated.');
     }
 
-    public function destroyTopic(Request $request, Topic $topic): RedirectResponse
+    public function destroyTopic(Request $request, Topic $topic): JsonResponse|RedirectResponse
     {
         $topic->load('room');
 
@@ -293,9 +299,12 @@ class TopicController extends Controller
             $topic->delete();
         });
 
-        return redirect()
-            ->route('rooms.show', $topic->room)
-            ->with('status', 'The topic has been deleted.');
+        return ForumSubmissionResponse::toRoute(
+            $request,
+            'rooms.show',
+            ['room' => $topic->room],
+            'The topic has been deleted.'
+        );
     }
 
     public function destroyPost(Request $request, Topic $topic, Post $post): RedirectResponse
